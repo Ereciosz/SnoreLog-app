@@ -29,7 +29,7 @@ import kotlin.math.sqrt
  */
 class RecorderService : Service() {
     private class Pend(val ts: Long, val dur: Long, val peak: Double, val mean: Double, val file: File,
-                       val cls: Double, val band: Double, val lv: String, val thr: Double)
+                       val cls: Double, val lv: String, val thr: Double)
 
     companion object {
         const val ACTION_STOP = "stop"
@@ -385,17 +385,16 @@ class RecorderService : Service() {
         val lvAct = ArrayList<Float>(700)
         var evThr = 0.0
 
-        fun save(p: Pend) { db.insert(p.ts, p.dur, p.peak, p.mean, p.file.absolutePath, p.cls, p.band, false, "", p.lv, p.thr); Widget.update(this) }
+        fun save(p: Pend) { db.insert(p.ts, p.dur, p.peak, p.mean, p.file.absolutePath, p.cls, false, "", p.lv, p.thr); Widget.update(this) }
         fun reject(p: Pend, why: String) {
             if (why == "short" || (!keepRej && !why.startsWith("fart"))) p.file.delete()
-            else db.insert(p.ts, p.dur, p.peak, p.mean, p.file.absolutePath, p.cls, p.band, true, why, p.lv, p.thr)
+            else db.insert(p.ts, p.dur, p.peak, p.mean, p.file.absolutePath, p.cls, true, why, p.lv, p.thr)
         }
 
         fun finish() {
             wav?.close()
             val f = file!!
             val dur = System.currentTimeMillis() - evStart
-            val bandV = -1.0
             val p = if (dur >= 800 && yam != null) yam.snoreProb(clip, clipLen).toDouble() else -1.0
             val aiMin = Settings(this).aiPct / 100f
             val fartOn = Settings(this).fart && yam != null && p >= 0 && yam.lastFart >= 0.35f && yam.lastFart > p
@@ -407,7 +406,7 @@ class RecorderService : Service() {
             }
             val sb = StringBuilder()
             for (v in lvAct) { if (sb.isNotEmpty()) sb.append(','); sb.append((v * 10).toInt()) }
-            val cur = Pend(evStart, dur, peak, sum / max(n, 1), f, p, bandV, sb.toString(), evThr)
+            val cur = Pend(evStart, dur, peak, sum / max(n, 1), f, p, sb.toString(), evThr)
             if (why.isNotEmpty()) reject(cur, why)
             else save(cur)
             wav = null; active = false; hot = 0; filled = 0

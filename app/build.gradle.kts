@@ -9,8 +9,8 @@ android {
         applicationId = "app.snorelog"
         minSdk = 29
         targetSdk = 35
-        versionCode = 47
-        versionName = "0.47"
+        versionCode = 48
+        versionName = "0.48"
     }
     signingConfigs {
         getByName("debug") {
@@ -34,5 +34,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("org.tensorflow:tensorflow-lite:2.16.1")
+    // No direct imports, but AndroidX startup/profile installer need Guava's ListenableFuture at launch. Removing it crashes the app on start.
     implementation("com.google.guava:guava:33.3.1-android")
 }

@@ -14,11 +14,12 @@ object Cfg {
 }
 
 data class Ev(val id: Long, val ts: Long, val durMs: Long, val peak: Double, val mean: Double, val path: String,
-              val cls: Double = -1.0, val band: Double = -1.0, val rej: Boolean = false, val reason: String = "", val thr: Double = 0.0)
+              val cls: Double = -1.0, val rej: Boolean = false, val reason: String = "", val thr: Double = 0.0)
 
 class Db(private val ctx: Context) : SQLiteOpenHelper(ctx, "snore.db", null, 4) {
     override fun onCreate(d: SQLiteDatabase) {
         d.execSQL("CREATE TABLE events(id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, dur INTEGER, peak REAL, mean REAL, path TEXT, " +
+            // band: legacy column, no longer written or read (SQLite cannot drop it cheaply)
             "cls REAL DEFAULT -1, band REAL DEFAULT -1, rej INTEGER DEFAULT 0, reason TEXT DEFAULT '', lv TEXT DEFAULT '', thr REAL DEFAULT 0)")
         mk(d)
     }
@@ -72,18 +73,18 @@ class Db(private val ctx: Context) : SQLiteOpenHelper(ctx, "snore.db", null, 4) 
     }
 
     fun insert(ts: Long, dur: Long, peak: Double, mean: Double, path: String,
-               cls: Double = -1.0, band: Double = -1.0, rej: Boolean = false, reason: String = "", lv: String = "", thr: Double = 0.0) {
+               cls: Double = -1.0, rej: Boolean = false, reason: String = "", lv: String = "", thr: Double = 0.0) {
         writableDatabase.insert("events", null, ContentValues().apply {
             put("ts", ts); put("dur", dur); put("peak", peak); put("mean", mean); put("path", path)
-            put("cls", cls); put("band", band); put("rej", if (rej) 1 else 0); put("reason", reason); put("lv", lv); put("thr", thr)
+            put("cls", cls); put("rej", if (rej) 1 else 0); put("reason", reason); put("lv", lv); put("thr", thr)
         })
     }
 
     private fun query(where: String): List<Ev> {
         val out = ArrayList<Ev>()
-        readableDatabase.rawQuery("SELECT id,ts,dur,peak,mean,path,cls,band,rej,reason,thr FROM events WHERE $where ORDER BY ts DESC", null).use {
+        readableDatabase.rawQuery("SELECT id,ts,dur,peak,mean,path,cls,rej,reason,thr FROM events WHERE $where ORDER BY ts DESC", null).use {
             while (it.moveToNext()) out.add(Ev(it.getLong(0), it.getLong(1), it.getLong(2), it.getDouble(3), it.getDouble(4), it.getString(5),
-                it.getDouble(6), it.getDouble(7), it.getInt(8) == 1, it.getString(9) ?: "", it.getDouble(10)))
+                it.getDouble(6), it.getInt(7) == 1, it.getString(8) ?: "", it.getDouble(9)))
         }
         return out
     }
@@ -110,9 +111,6 @@ class Db(private val ctx: Context) : SQLiteOpenHelper(ctx, "snore.db", null, 4) 
         }
         writableDatabase.delete("events", cond, null)
     }
-
-    fun restoreVehicle(): Int =
-        writableDatabase.compileStatement("UPDATE events SET rej=0, reason='' WHERE rej=1 AND reason LIKE 'vehicle%'").executeUpdateDelete()
 
     fun deleteEvents(ids: List<Long>) {
         for (id in ids) {
@@ -201,9 +199,6 @@ class Settings(c: Context) {
     var boostDb: Int // playback gain in dB (LoudnessEnhancer)
         get() = p.getInt("bd", 12)
         set(v) { p.edit().putInt("bd", v).apply() }
-    var vehRestored: Boolean
-        get() = p.getBoolean("vr", false)
-        set(v) { p.edit().putBoolean("vr", v).apply() }
 
     var lang: Int // 0 = follow phone, 1 = English, 2 = Polish
         get() = p.getInt("lg", 0)

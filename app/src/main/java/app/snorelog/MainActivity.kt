@@ -509,7 +509,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(0, s.top, 0, s.bottom); i
         }
         showTab(0)
-        restoreVeh()
         Diag.log(this, "app opened; last process exit: " + exitInfo().trim())
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
@@ -647,17 +646,6 @@ class MainActivity : AppCompatActivity() {
         mp.start(); playBtn.text = "Pause"
     }
 
-    /** One-time: bring back clips the removed vehicle filter had rejected (they had passed every other filter). */
-    private fun restoreVeh() {
-        val st = Settings(this)
-        if (st.vehRestored) return
-        Thread {
-            val d = Db(this); val n = d.restoreVehicle(); d.close()
-            st.vehRestored = true
-            runOnUiThread { if (n > 0) { toast("Restored $n clips"); refresh() } }
-        }.start()
-    }
-
     private fun heads() {
         evHead.text = "EVENTS ($evCount)   " + if (evOpen) "\u25B4" else "\u25BE"
         rejHead.text = "REJECTED BY FILTERS ($rejCount)   " + if (rejOpen) "\u25B4" else "\u25BE"
@@ -685,7 +673,6 @@ class MainActivity : AppCompatActivity() {
     private fun scoreText(e: Ev): String {
         val p = ArrayList<String>()
         if (e.cls >= 0) p.add("AI %.2f".format(Locale.US, e.cls))
-        if (e.band >= 0) p.add("${L.t("low-freq")} %.0f%%".format(Locale.US, e.band * 100))
         return p.joinToString(", ")
     }
 
@@ -960,8 +947,8 @@ class MainActivity : AppCompatActivity() {
         val dir = File(getExternalFilesDir(null), "exports").also { it.mkdirs() }
         val f = File(dir, "snore_events.csv")
         val iso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
-        f.writeText("timestamp_iso,timestamp_ms,duration_s,peak_dbfs,mean_dbfs,ai_score,lowfreq_share\n" + all.joinToString("\n") {
-            "${iso.format(Date(it.ts))},${it.ts},${"%.1f".format(Locale.US, it.durMs / 1000.0)},${"%.1f".format(Locale.US, it.peak)},${"%.1f".format(Locale.US, it.mean)},${"%.2f".format(Locale.US, it.cls)},${"%.2f".format(Locale.US, it.band)}"
+        f.writeText("timestamp_iso,timestamp_ms,duration_s,peak_dbfs,mean_dbfs,ai_score\n" + all.joinToString("\n") {
+            "${iso.format(Date(it.ts))},${it.ts},${"%.1f".format(Locale.US, it.durMs / 1000.0)},${"%.1f".format(Locale.US, it.peak)},${"%.1f".format(Locale.US, it.mean)},${"%.2f".format(Locale.US, it.cls)}"
         })
         val uri = FileProvider.getUriForFile(this, "$packageName.files", f)
         startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/csv")

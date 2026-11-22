@@ -102,7 +102,6 @@ Off	Wyłączone
 Watchdog %s, bedside mode, battery settings	Strażnik: %s, tryb przy łóżku, ustawienia baterii
 %s theme, dynamic colours %s	Motyw: %s, kolory dynamiczne: %s
 Keep %d days, rejected clips %s	Przechowuj %d dni, odrzucone nagrania: %s
-Version %s, privacy, licences	Wersja %s, prywatność, licencje
 on	wł.
 off	wył.
 Not now	Nie teraz
@@ -124,11 +123,9 @@ Log is empty	Dziennik jest pusty
 Close	Zamknij
 (rejected)	(odrzucone)
 Rejected	Odrzucone
-low-freq	niskie cz.
 trigger	próg
 peak	szczyt
 short	krótkie
-isolated	pojedyncze
 No snoring events	Brak zdarzeń chrapania
 recorded this night	zarejestrowanych tej nocy
 The system probably ended monitoring	System prawdopodobnie zakończył nasłuch
@@ -160,7 +157,6 @@ This night	Ta noc
 Last night	Ostatnia noc
 No events yet	Brak zdarzeń
 Arm	Włącz
-Arm monitoring and see last night at a glance	Włącz nasłuch i zobacz ostatnią noc w skrócie
 Starting microphone...	Uruchamianie mikrofonu...
 Make a snoring sound, or play a snoring video next to the phone. Bars above the dashed line would start an event. Nothing is recorded or saved here.	Zrób dźwięk chrapania lub odtwórz film z chrapaniem obok telefonu. Słupki powyżej przerywanej linii rozpoczęłyby zdarzenie. Nic tu nie jest nagrywane ani zapisywane.
 Reset noise floor	Zresetuj poziom szumu
@@ -220,7 +216,6 @@ Experimental. When the AI hears a fart more strongly than snoring, the clip is c
 ~fart ([\d.]+)	bąk $1
 ~Farts: (\d+)	Bąki: $1
 
-~Restored (\d+) clips	Przywrócono $1 nagrań
 ~Playback boost: \+(\d+) dB	Wzmocnienie odtwarzania: +$1 dB
 Would trigger	Wyzwoliłoby
 ~([\d.,]+) min of snoring	$1 min chrapania
@@ -252,7 +247,6 @@ Disarm when I get up	Wyłącz, gdy wstanę
 Counts from your next Clock alarm (within 14 h of arming). A snooze keeps it armed. With no alarm set, it starts counting once the screen has been off for 10 min (fixed, separate from the recording delay below).	Liczy od najbliższego budzika z aplikacji Zegar (w ciągu 14 h od włączenia). Drzemka nie wyłącza nasłuchu. Bez budzika zaczyna liczyć, gdy ekran był wyłączony przez 10 min (stałe, niezależne od opóźnienia nagrywania poniżej).
 ~I am up when the screen stays on for (\d+) min	Wstałem, gdy ekran jest włączony przez $1 min
 A ringing alarm keeps the screen on, so use 15 min or more.	Dzwoniący budzik trzyma ekran włączony, więc użyj 15 min lub więcej.
-When I unplug the phone	Gdy odłączę telefon
 After alarm	Po budziku
 Always	Zawsze
 Pause: recording resumes when you plug in again. After alarm: unplugging after your alarm disarms (needs Disarm when I get up). Always: any unplug disarms.	Wstrzymaj: nagrywanie wznowi się po ponownym podłączeniu. Po budziku: odłączenie po budziku wyłącza nasłuch (wymaga opcji Wyłącz, gdy wstanę). Zawsze: każde odłączenie wyłącza nasłuch.
