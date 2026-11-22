@@ -79,4 +79,8 @@ See [`PRIVACY.md`](PRIVACY.md). Audio and statistics never leave the phone unles
 
 ## Licence
 
-MIT, see [`LICENSE`](LICENSE). Third-party components: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+SnoreLog is free software under the **GNU General Public License v3.0**, see [`LICENSE`](LICENSE). You may use, study, change and share it, but any version you distribute must also be released under GPL-3.0 with its source code. Closed-source copies are not allowed.
+
+Version 0.47 was first published under the MIT licence and remains available under those terms. Everything after it is GPL-3.0.
+
+Third-party components: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

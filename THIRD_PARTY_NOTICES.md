@@ -1,6 +1,6 @@
 # Third-party components
 
-SnoreLog itself is MIT licensed (see `LICENSE`). It uses the following components, all under the Apache License 2.0 unless noted:
+SnoreLog itself is licensed under the GNU GPL v3.0 (see `LICENSE`). It uses the following components, all under the Apache License 2.0 unless noted:
 
 | Component | Use | Licence |
 |---|---|---|
@@ -11,3 +11,5 @@ SnoreLog itself is MIT licensed (see `LICENSE`). It uses the following component
 | [Guava](https://github.com/google/guava) (Google) | Required by AndroidX startup components | Apache 2.0 |
 
 The full text of the Apache License 2.0 is at <https://www.apache.org/licenses/LICENSE-2.0>.
+
+Apache 2.0 components are compatible with GPL-3.0 and are used under their own licence.
