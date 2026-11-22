@@ -1,0 +1,274 @@
+SnoreLog	SnoreLog
+Idle	Bezczynny
+Armed	Czuwa
+Recording	Nagrywa
+Not armed	Nasłuch wyłączony
+Armed - not recording yet	Nasłuch włączony - jeszcze nie nagrywa
+Listening while charging.	Nasłuchuje podczas ładowania.
+Tap Arm monitoring, then connect the charger.	Naciśnij „Włącz nasłuch”, a potem podłącz ładowarkę.
+Arm monitoring	Włącz nasłuch
+Disarm	Wyłącz nasłuch
+Waiting for charger	Czekam na ładowarkę
+Waiting	Czekam
+Paused while the screen is on (screen-off-only is enabled)	Wstrzymano, gdy ekran jest włączony (włączona opcja „tylko przy wyłączonym ekranie”)
+Monitoring stopped	Nasłuch zatrzymany
+Dismiss	Zamknij
+Night	Noc
+Trends	Trendy
+Settings	Ustawienia
+Timeline	Oś czasu
+Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.	Ściśnij palce, by przybliżyć, przeciągnij, by przesunąć, dotknij słupka, by odtworzyć, dwukrotnie dotknij, by przełączyć między zdarzeniami a całą nocą.
+Tags for this night	Znaczniki tej nocy
+Alcohol	Alkohol
+Congestion	Zatkany nos
+Late meal	Późny posiłek
+Back sleeping	Spanie na plecach
+Stress/tired	Stres/zmęczenie
+Orange	Pomarańczowy
+Teal	Morski
+Violet	Fioletowy
+Green	Zielony
+Player	Odtwarzacz
+Play	Odtwórz
+Pause	Pauza
+Share	Udostępnij
+Save to Downloads	Zapisz w Pobranych
+Delete clip	Usuń nagranie
+Clips the filters dropped. If real snoring is here, lower the thresholds or switch a filter off.	Nagrania odrzucone przez filtry. Jeśli jest tu prawdziwe chrapanie, obniż progi lub wyłącz filtr.
+Last 14 nights - minutes of snoring	Ostatnie 14 nocy - minuty chrapania
+Calendar	Kalendarz
+Tag insights	Wnioski ze znaczników
+MTWTFSS	PWŚCPSN
+No events	Brak zdarzeń
+SCORE	WYNIK
+Appearance	Wygląd
+Schedule	Harmonogram
+Detection	Wykrywanie
+Reliability	Niezawodność
+Storage & data	Pamięć i dane
+Diagnostics	Diagnostyka
+About	O aplikacji
+Theme	Motyw
+System	Systemowy
+Light	Jasny
+Dark	Ciemny
+Dynamic colours (Android 12+)	Kolory dynamiczne (Android 12+)
+Accent colour (used when dynamic colours are off)	Kolor akcentu (gdy kolory dynamiczne są wyłączone)
+Record only while the screen is off	Nagrywaj tylko przy wyłączonym ekranie
+Pauses while the screen is on (YouTube, reading) and resumes after the delay below once it turns off.	Wstrzymuje się, gdy ekran jest włączony (YouTube, czytanie) i wznawia po opóźnieniu poniżej, gdy ekran zgaśnie.
+Also record on battery	Nagrywaj także na baterii
+Experimental. Lets it record without a charger. Costs battery (my estimate: a few percent per night, not yet measured on your phone) and the system is more likely to stop the app. It stops at the limit below and resumes when you plug in.	Eksperymentalne. Pozwala nagrywać bez ładowarki. Zużywa baterię (moja ocena: kilka procent na noc, jeszcze niezmierzone na Twoim telefonie), a system chętniej zatrzyma aplikację. Zatrzymuje się na poniższym progu i wznawia po podłączeniu ładowarki.
+Test mode (live meter)	Tryb testowy (miernik na żywo)
+Keeps an event only if its AI snoring score is at or above this. Higher drops more noise (and maybe some real snoring). Applies to new recordings; old clips keep their saved score.	Zachowuje zdarzenie tylko, gdy jego wynik AI jest równy lub wyższy. Wyższa wartość odrzuca więcej hałasu (i być może trochę prawdziwego chrapania). Dotyczy nowych nagrań; stare zachowują zapisany wynik.
+A small on-device model (YAMNet) checks each event for snoring and drops the rest. Uses a bit more battery.	Mały model na urządzeniu (YAMNet) sprawdza każde zdarzenie pod kątem chrapania i odrzuca resztę. Zużywa trochę więcej baterii.
+Model: included in this build.	Model: wbudowany w tę wersję.
+Model: not in this build (filter is skipped).	Model: brak w tej wersji (filtr jest pomijany).
+Vibrate after 15 s of continuous snoring	Wibruj po 15 s ciągłego chrapania
+Suspected breathing-pause detection (experimental)	Wykrywanie podejrzanych przerw w oddychaniu (eksperymentalne)
+Changes apply at the next start.	Zmiany zadziałają przy następnym uruchomieniu.
+Pause recording when the phone is hot	Wstrzymaj nagrywanie, gdy telefon jest gorący
+Also pauses when Android reports severe overheating. SnoreLog itself adds little heat, so a hot phone usually means the charger, a case or bedding. You get a notification, and recording resumes by itself after it cools.	Wstrzymuje też, gdy Android zgłasza poważne przegrzanie. SnoreLog sam grzeje niewiele, więc gorący telefon to zwykle ładowarka, etui lub pościel. Dostaniesz powiadomienie, a nagrywanie wznowi się samo po ostygnięciu.
+Notification sounds and channels	Dźwięki i kanały powiadomień
+Each kind of message has its own channel (stopped by the system, phone too hot, auto-disarm), all silent by default. Open this to give any of them a sound or pop-up.	Każdy rodzaj komunikatu ma własny kanał (zatrzymane przez system, telefon za gorący, automatyczne wyłączenie), wszystkie domyślnie ciche. Otwórz, by nadać któremuś dźwięk lub wyskakujące okienko.
+Watchdog alert	Alert strażnika
+Every ~15 min checks that monitoring is alive. If the system killed it, you get a loud notification to arm again.	Co ok. 15 min sprawdza, czy nasłuch działa. Jeśli system go zabił, dostaniesz głośne powiadomienie, by włączyć go ponownie.
+Allow background activity	Zezwól na pracę w tle
+Open app battery settings	Otwórz ustawienia baterii aplikacji
+Allow display over other apps	Zezwól na wyświetlanie nad innymi aplikacjami
+Optional. Some phones then treat the app as more important and are less likely to stop it.	Opcjonalne. Niektóre telefony traktują wtedy aplikację jako ważniejszą i rzadziej ją zatrzymują.
+Bedside mode (screen stays on, black)	Tryb przy łóżku (ekran włączony, czarny)
+Optional, strongest protection: keeps the app visible all night with a black, dimmed screen. Uses a little battery on OLED. Long-press the screen to exit.	Opcjonalne, najsilniejsza ochrona: aplikacja widoczna całą noc na czarnym, przyciemnionym ekranie. Na OLED zużywa trochę baterii. Aby wyjść, przytrzymaj ekran.
+The persistent notification keeps the service in the foreground, but the phone's battery manager can still stop it. Set Battery to Unrestricted for this app. After a reboot, arm again.	Stałe powiadomienie utrzymuje usługę na pierwszym planie, ale menedżer baterii telefonu może ją nadal zatrzymać. Ustaw dla tej aplikacji baterię na „Bez ograniczeń”. Po ponownym uruchomieniu telefonu włącz nasłuch jeszcze raz.
+Battery optimisation: off for this app (good)	Optymalizacja baterii: wyłączona dla tej aplikacji (dobrze)
+Battery optimisation: on (the system may stop monitoring)	Optymalizacja baterii: włączona (system może zatrzymać nasłuch)
+Keep rejected clips for review (3 days)	Zachowaj odrzucone nagrania do przeglądu (3 dni)
+Clean up now	Wyczyść teraz
+Delete rejected clips	Usuń odrzucone nagrania
+Export CSV	Eksportuj CSV
+Done	Gotowe
+Deleted	Usunięto
+Share log	Udostępnij dziennik
+Debug build	Wersja debugowa
+AI classifier model: included	Model klasyfikatora AI: wbudowany
+AI classifier model: not in this build	Model klasyfikatora AI: brak w tej wersji
+Privacy	Prywatność
+Audio is recorded and analysed on this phone only. SnoreLog has no internet access and sends nothing anywhere. Clips and statistics stay in the app's own storage until you delete them or they expire.	Dźwięk jest nagrywany i analizowany wyłącznie na tym telefonie. SnoreLog nie ma dostępu do internetu i niczego nigdzie nie wysyła. Nagrania i statystyki zostają w pamięci aplikacji, dopóki ich nie usuniesz lub nie wygasną.
+Full privacy text	Pełny tekst o prywatności
+Not a medical device	To nie jest wyrób medyczny
+Pause detection is not a medical device. It marks silences of 10-90 s between loud breathing. If you or a partner notice choking or gasping, or you are very sleepy by day, see a doctor.	Wykrywanie przerw nie jest wyrobem medycznym. Zaznacza ciszę trwającą 10-90 s między głośnymi oddechami. Jeśli Ty lub partner zauważycie dławienie się lub łapanie powietrza albo jesteś bardzo senny w dzień, zgłoś się do lekarza.
+Open-source components	Składniki open source
+Material Components for Android, AndroidX, TensorFlow Lite and the YAMNet audio model (Google) are used under the Apache License 2.0.	Material Components for Android, AndroidX, TensorFlow Lite i model dźwiękowy YAMNet (Google) są używane na licencji Apache 2.0.
+Off	Wyłączone
+Watchdog %s, bedside mode, battery settings	Strażnik: %s, tryb przy łóżku, ustawienia baterii
+%s theme, dynamic colours %s	Motyw: %s, kolory dynamiczne: %s
+Keep %d days, rejected clips %s	Przechowuj %d dni, odrzucone nagrania: %s
+Version %s, privacy, licences	Wersja %s, prywatność, licencje
+on	wł.
+off	wył.
+Not now	Nie teraz
+Delete this clip?	Usunąć to nagranie?
+The recording is removed from the phone and cannot be recovered.	Nagranie zostanie usunięte z telefonu bez możliwości odzyskania.
+Cancel	Anuluj
+Delete	Usuń
+Share clip	Udostępnij nagranie
+Export	Eksport
+Cannot share this clip	Nie można udostępnić nagrania
+Cannot save	Nie można zapisać
+Cannot save this clip	Nie można zapisać nagrania
+Saved to Downloads/SnoreLog	Zapisano w Pobrane/SnoreLog
+Not available on this phone	Niedostępne na tym telefonie
+Microphone permission required	Wymagane uprawnienie do mikrofonu
+Clip file is missing	Brak pliku nagrania
+Cannot play this clip	Nie można odtworzyć nagrania
+Log is empty	Dziennik jest pusty
+Close	Zamknij
+(rejected)	(odrzucone)
+Rejected	Odrzucone
+low-freq	niskie cz.
+trigger	próg
+peak	szczyt
+short	krótkie
+isolated	pojedyncze
+No snoring events	Brak zdarzeń chrapania
+recorded this night	zarejestrowanych tej nocy
+The system probably ended monitoring	System prawdopodobnie zakończył nasłuch
+Set Battery to Unrestricted in Settings > Reliability, then arm again.	Ustaw baterię na „Bez ograniczeń” w Ustawienia > Niezawodność, a potem włącz nasłuch ponownie.
+-	-
+SnoreLog armed	SnoreLog czuwa
+SnoreLog recording	SnoreLog nagrywa
+Listening while charging	Nasłuchuje podczas ładowania
+SnoreLog disarmed	SnoreLog wyłączony
+Phone is hot - recording paused	Telefon jest gorący - nagrywanie wstrzymane
+Battery low - recording stopped	Niski poziom baterii - nagrywanie zatrzymane
+SnoreLog stopped	SnoreLog zatrzymany
+Reached the 12 h recording limit.	Osiągnięto limit nagrywania 12 h.
+SnoreLog was stopped by the system	SnoreLog został zatrzymany przez system
+Tap to open and arm again	Dotknij, by otworzyć i włączyć nasłuch ponownie
+Microphone unavailable - open the app and arm again	Mikrofon niedostępny - otwórz aplikację i włącz nasłuch ponownie
+Microphone looks silenced by the system - open the app and arm again while charging	Mikrofon wygląda na wyciszony przez system - otwórz aplikację i włącz nasłuch ponownie podczas ładowania
+Snore monitoring	Nasłuch chrapania
+Stopped by the system	Zatrzymane przez system
+Monitoring was ended by Android or the watchdog found it not running	Nasłuch został zakończony przez Androida lub strażnik wykrył, że nie działa
+Phone too hot	Telefon za gorący
+Recording paused because the phone got hot	Nagrywanie wstrzymane, bo telefon się nagrzał
+Auto-disarm and limits	Automatyczne wyłączenie i limity
+Disarmed because you were awake, or the 12 h limit was reached	Wyłączono, bo byłeś/aś na nogach, lub osiągnięto limit 12 h
+Bedside mode - long-press to exit	Tryb przy łóżku - przytrzymaj, by wyjść
+Armed - waiting	Czuwa - czeka
+Stopped by system	Zatrzymane przez system
+This night	Ta noc
+Last night	Ostatnia noc
+No events yet	Brak zdarzeń
+Arm	Włącz
+Arm monitoring and see last night at a glance	Włącz nasłuch i zobacz ostatnią noc w skrócie
+Starting microphone...	Uruchamianie mikrofonu...
+Make a snoring sound, or play a snoring video next to the phone. Bars above the dashed line would start an event. Nothing is recorded or saved here.	Zrób dźwięk chrapania lub odtwórz film z chrapaniem obok telefonu. Słupki powyżej przerywanej linii rozpoczęłyby zdarzenie. Nic tu nie jest nagrywane ani zapisywane.
+Reset noise floor	Zresetuj poziom szumu
+Test mode	Tryb testowy
+Microphone unavailable (permission?)	Mikrofon niedostępny (uprawnienie?)
+Below trigger - ignored	Poniżej progu - pominięte
+Loud but high-pitched - ignored	Głośne, ale wysokie - pominięte
+AI snoring score: listening...	Wynik chrapania AI: słucham...
+Zero crossings	Przejścia przez zero
+SnoreLog works on your phone only. It has no internet access and sends nothing anywhere.	SnoreLog działa wyłącznie na Twoim telefonie. Nie ma dostępu do internetu i niczego nigdzie nie wysyła.
+Microphone: audio is recorded only while monitoring is armed and conditions are met. Clips, loudness curves, tags and statistics are stored in the app's private storage. You can delete a clip in the app, set how long clips are kept, or uninstall the app to remove everything.	Mikrofon: dźwięk jest nagrywany tylko wtedy, gdy nasłuch jest włączony i spełnione są warunki. Nagrania, krzywe głośności, znaczniki i statystyki są przechowywane w prywatnej pamięci aplikacji. Możesz usunąć nagranie w aplikacji, ustawić czas przechowywania albo odinstalować aplikację, by usunąć wszystko.
+SnoreLog is not a medical device and does not diagnose sleep apnea or any other condition.	SnoreLog nie jest wyrobem medycznym i nie diagnozuje bezdechu sennego ani żadnej innej choroby.
+~Trigger: room noise \+ (\d+) dB \(lower = more sensitive\)	Próg: szum pokoju + $1 dB (niżej = czulej)
+~Pause at battery temperature (\d+) °C \(resumes at (\d+) °C\)	Wstrzymaj przy temperaturze baterii $1 °C (wznowi przy $2 °C)
+~AI score needed: ([\d.]+)	Wymagany wynik AI: $1
+~Stop recording below (\d+)% battery	Zatrzymaj nagrywanie poniżej $1% baterii
+~Start immediately when the screen turns off	Zacznij od razu po wyłączeniu ekranu
+~Start (\d+) min after the screen turns off	Zacznij $1 min po wyłączeniu ekranu
+~Delete clips and events after (\d+) days	Usuwaj nagrania i zdarzenia po $1 dniach
+~Version (\S+) \(build (\d+)\)	Wersja $1 (kompilacja $2)
+~Package (\S+)	Pakiet $1
+~Kept: (\d+) clips, (.+)	Zachowane: $1 nagrań, $2
+~Rejected: (\d+) clips, (.+)	Odrzucone: $1 nagrań, $2
+~The system probably ended monitoring \(last activity (\d\d:\d\d)\)	System prawdopodobnie zakończył nasłuch (ostatnia aktywność $1)
+~Android says: (.*)	Android informuje: $1
+~(.*)  \(latest\)	$1  (najnowsza)
+~Loudest (-?[\d.,]+) dBFS	Najgłośniej $1 dBFS
+~Suspected pauses \(>=10 s\): (\d+) \((.+)/h\), longest (\d+) s	Podejrzane przerwy (>=10 s): $1 ($2/godz.), najdłuższa $3 s
+~Suspected pauses \(>=10 s\): (\d+) \((.+)/h\)	Podejrzane przerwy (>=10 s): $1 ($2/godz.)
+~(.+): need more nights \((\d+) with / (\d+) without\)	$1: potrzeba więcej nocy ($2 z / $3 bez)
+~(.+): ([\d.,]+) min with vs ([\d.,]+) min without	$1: $2 min z vs $3 min bez
+~(\d+) clips merged, tap to play all	$1 połączonych nagrań, dotknij, by odtworzyć wszystkie
+~Delete (\d+) merged clips\?	Usunąć $1 połączonych nagrań?
+~(.*)  \(rejected\)	$1  (odrzucone)
+~Rejected: (.*)\. (.*)	Odrzucone: $1. $2
+~Rejected: (.*)\.	Odrzucone: $1.
+~band (\d+)%	pasmo $1%
+~AI ([\d.]+)	AI $1
+~trigger (-?[\d.]+) dBFS, peak (-?[\d.]+) dBFS	próg $1 dBFS, szczyt $2 dBFS
+~EVENTS \((\d+)\)   (.)	ZDARZENIA ($1)   $2
+~REJECTED BY FILTERS \((\d+)\)   (.)	ODRZUCONE PRZEZ FILTRY ($1)   $2
+~Waiting: battery below (\d+)%	Czekam: bateria poniżej $1%
+~Paused: phone is hot \((\d+) C\)	Wstrzymano: telefon jest gorący ($1 °C)
+~([\d.]+) C\. Recording resumes when it cools down\.	$1 °C. Nagrywanie wznowi się po ostygnięciu.
+~You have been awake for (\d+) min, so monitoring stopped\.	Nie śpisz od $1 min, więc nasłuch został zatrzymany.
+~Below (\d+)%\. Connect the charger to resume\.	Poniżej $1%. Podłącz ładowarkę, by wznowić.
+~SnoreLog - (.*)	SnoreLog - $1
+~(This night|Last night) - (\d+) events	$1 - $2 zdarzeń
+~Score (\S+)	Wynik $1
+~(\d+) events	$1 zdarzeń
+~Noise floor (-?[\d.]+) dBFS, trigger (-?[\d.]+) dBFS \(\+(\d+) dB\)	Poziom szumu $1 dBFS, próg $2 dBFS (+$3 dB)
+~Zero crossings: ([\d.]+) \(limit ([\d.]+)\)	Przejścia przez zero: $1 (limit $2)
+~AI snoring score: ([\d.]+) \(keeps at ([\d.]+) or more\)	Wynik chrapania AI: $1 (zachowuje od $2)
+Language	Język
+Detect farts (for fun)	Wykrywaj bąki (dla zabawy)
+Experimental. When the AI hears a fart more strongly than snoring, the clip is counted as a fart instead of snoring. Only sounds of 0.8 s or longer are checked. Fart clips are kept for the normal retention time.	Eksperymentalne. Gdy AI słyszy bąka wyraźniej niż chrapanie, nagranie jest liczone jako bąk, a nie chrapanie. Sprawdzane są tylko dźwięki trwające co najmniej 0,8 s. Nagrania bąków są przechowywane przez zwykły czas przechowywania.
+~fart ([\d.]+)	bąk $1
+~Farts: (\d+)	Bąki: $1
+
+~Restored (\d+) clips	Przywrócono $1 nagrań
+~Playback boost: \+(\d+) dB	Wzmocnienie odtwarzania: +$1 dB
+Would trigger	Wyzwoliłoby
+~([\d.,]+) min of snoring	$1 min chrapania
+~(\d+) events, longest (\d+) s	$1 zdarzeń, najdłużej $2 s
+~([+-][\d.,]+) min vs 7-night avg	$1 min wobec średniej z 7 nocy
+~Play loudest clip - (\d\d:\d\d), (-?\d+) dBFS	Odtwórz najgłośniejsze nagranie - $1, $2 dBFS
+Trigger +%d dB, AI score %.2f	Próg +%d dB, wynik AI %.2f
+AI classifier: not in this build	Klasyfikator AI: brak w tej wersji
+Keep monitoring alive	Utrzymaj nasłuch przy życiu
+To record all night, Android must not stop SnoreLog in the background. Tap Allow, then in the app's battery settings (Settings > Reliability) choose Unrestricted. Without it the phone may end monitoring during the night.	Aby nagrywać całą noc, Android nie może zatrzymywać SnoreLog w tle. Dotknij Zezwól, a potem w ustawieniach baterii aplikacji (Ustawienia > Niezawodność) wybierz Bez ograniczeń. Bez tego telefon może przerwać nasłuch w nocy.
+Allow	Zezwól
+Don't remind me	Nie przypominaj
+What's new	Co nowego
+Made with Claude by Erecik ♥	Stworzone z Claude przez Erecika ♥
+
+~Updated to (v[\d.]+): (.*)	Zaktualizowano do $1: $2
+Healthy sleep habits (website)	Zdrowe nawyki snu (strona www)
+You are up after your alarm, so monitoring stopped.	Wstałeś po budziku, więc nasłuch został zatrzymany.
+Advanced	Zaawansowane
+When I unplug the phone	Gdy odłączę telefon
+View event log	Pokaż dziennik zdarzeń
+Share event log	Udostępnij dziennik zdarzeń
+The log records service start/stop, errors, battery and heat, to find out why monitoring stops.	Dziennik zapisuje starty i zatrzymania usługi, błędy, baterię i temperaturę, by ustalić, dlaczego nasłuch się zatrzymuje.
+Shows loudness, trigger level and AI score live, so you can tune sensitivity by day.	Pokazuje na żywo głośność, próg i wynik AI, by dostroić czułość w ciągu dnia.
+Playback boost: makes clips louder when played, so the phone volume does not have to be at maximum. Does not change the saved files. Very high values may distort loud snores.	Wzmocnienie odtwarzania: zwiększa głośność nagrań przy odtwarzaniu, więc nie trzeba ustawiać głośności telefonu na maksimum. Nie zmienia zapisanych plików. Bardzo wysokie wartości mogą znieksztalcać głośne chrapanie.
+Alarm disarm %s, screen-off only %s	Wyłączenie po budziku: %s, tylko przy wyłączonym ekranie: %s
+Version %s, privacy, log, licences	Wersja %s, prywatność, dziennik, licencje
+Disarm when I get up	Wyłącz, gdy wstanę
+Counts from your next Clock alarm (within 14 h of arming). A snooze keeps it armed. With no alarm set, it starts counting once the screen has been off for 10 min (fixed, separate from the recording delay below).	Liczy od najbliższego budzika z aplikacji Zegar (w ciągu 14 h od włączenia). Drzemka nie wyłącza nasłuchu. Bez budzika zaczyna liczyć, gdy ekran był wyłączony przez 10 min (stałe, niezależne od opóźnienia nagrywania poniżej).
+~I am up when the screen stays on for (\d+) min	Wstałem, gdy ekran jest włączony przez $1 min
+A ringing alarm keeps the screen on, so use 15 min or more.	Dzwoniący budzik trzyma ekran włączony, więc użyj 15 min lub więcej.
+When I unplug the phone	Gdy odłączę telefon
+After alarm	Po budziku
+Always	Zawsze
+Pause: recording resumes when you plug in again. After alarm: unplugging after your alarm disarms (needs Disarm when I get up). Always: any unplug disarms.	Wstrzymaj: nagrywanie wznowi się po ponownym podłączeniu. Po budziku: odłączenie po budziku wyłącza nasłuch (wymaga opcji Wyłącz, gdy wstanę). Zawsze: każde odłączenie wyłącza nasłuch.
+Battery mode keeps recording after an unplug until the battery floor.	Tryb baterii nagrywa po odłączeniu aż do progu baterii.
+Backup	Kopia zapasowa
+Saves all events, clips and settings into one ZIP file that you choose where to keep (Files, Drive, a computer). Restoring replaces everything on this phone with the backup. Disarm first.	Zapisuje wszystkie zdarzenia, nagrania i ustawienia w jednym pliku ZIP, który zapisujesz, gdzie chcesz (Pliki, Dysk, komputer). Przywrócenie zastępuje wszystko na tym telefonie kopią. Najpierw wyłącz nasłuch.
+Back up to ZIP	Zrób kopię do ZIP
+Restore from ZIP	Przywróć z ZIP
+Backing up...	Tworzenie kopii...
+Restoring...	Przywracanie...
+Backup failed	Nie udało się utworzyć kopii
+Disarm first	Najpierw wyłącz nasłuch
+Restore from backup?	Przywrócić z kopii?
+All current events, clips and settings on this phone are replaced by the backup. This cannot be undone.	Wszystkie obecne zdarzenia, nagrania i ustawienia na tym telefonie zostaną zastąpione kopią. Nie można tego cofnąć.
+Choose file	Wybierz plik
+Restore failed: not a SnoreLog backup	Nie udało się przywrócić: to nie jest kopia SnoreLog
+Backup saved (%d clips)	Kopia zapisana (nagrań: %d)
+Restored from backup (%d clips)	Przywrócono z kopii (nagrań: %d)
+Backup: a ZIP file is created only when you tap Back up, and saved where you choose. SnoreLog does not send it anywhere.	Kopia zapasowa: plik ZIP powstaje tylko po dotknięciu „Zrób kopię” i jest zapisywany tam, gdzie wskażesz. SnoreLog nigdzie go nie wysyła.

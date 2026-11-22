@@ -1,0 +1,17 @@
+# Build output
+build/
+.gradle/
+*.apk
+*.aab
+local.properties
+.idea/
+*.iml
+.DS_Store
+
+# Signing keys never belong in the repository
+*.keystore
+*.jks
+
+# Downloaded at build time (see README)
+app/src/main/assets/yamnet.tflite
+app/src/main/assets/yamnet_class_map.csv

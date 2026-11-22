@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SnoreLog" parent="Theme.Material3.DayNight.NoActionBar"/>
+    <style name="AccentOrange" parent="">
+        <item name="colorPrimary">#FFB59F</item>
+        <item name="colorOnPrimary">#5E1700</item>
+        <item name="colorPrimaryContainer">#862A0B</item>
+        <item name="colorOnPrimaryContainer">#FFDBD0</item>
+        <item name="colorSecondaryContainer">#5C4037</item>
+        <item name="colorOnSecondaryContainer">#FFDBD0</item>
+    </style>
+    <style name="AccentTeal" parent="">
+        <item name="colorPrimary">#80D5D4</item>
+        <item name="colorOnPrimary">#003737</item>
+        <item name="colorPrimaryContainer">#004F4F</item>
+        <item name="colorOnPrimaryContainer">#9CF1F0</item>
+        <item name="colorSecondaryContainer">#324B4B</item>
+        <item name="colorOnSecondaryContainer">#CCE8E7</item>
+    </style>
+    <style name="AccentViolet" parent="">
+        <item name="colorPrimary">#D0BCFF</item>
+        <item name="colorOnPrimary">#381E72</item>
+        <item name="colorPrimaryContainer">#4F378A</item>
+        <item name="colorOnPrimaryContainer">#EADDFF</item>
+        <item name="colorSecondaryContainer">#4A4458</item>
+        <item name="colorOnSecondaryContainer">#E8DEF8</item>
+    </style>
+    <style name="AccentGreen" parent="">
+        <item name="colorPrimary">#A1D39A</item>
+        <item name="colorOnPrimary">#0A390F</item>
+        <item name="colorPrimaryContainer">#235024</item>
+        <item name="colorOnPrimaryContainer">#BCF0B4</item>
+        <item name="colorSecondaryContainer">#3B4B38</item>
+        <item name="colorOnSecondaryContainer">#D7E8D0</item>
+    </style>
+</resources>

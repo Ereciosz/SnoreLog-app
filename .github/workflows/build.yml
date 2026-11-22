@@ -1,0 +1,57 @@
+name: Build APK
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Download YAMNet model (optional)
+        continue-on-error: true
+        run: |
+          mkdir -p app/src/main/assets
+          M=app/src/main/assets/yamnet.tflite
+          get() { curl -fsSL --retry 2 -o "$2" "$1" && [ "$(stat -c%s "$2")" -gt 100000 ]; }
+          get "https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/android/lite-model_yamnet_classification_tflite_1.tflite" $M \
+            || get "https://tfhub.dev/google/lite-model/yamnet/classification/tflite/1?lite-format=tflite" $M \
+            || { curl -fsSL -o /tmp/y.tgz "https://www.kaggle.com/api/v1/models/google/yamnet/tfLite/classification-tflite/1/download" && mkdir -p /tmp/y && tar -xzf /tmp/y.tgz -C /tmp/y && cp "$(find /tmp/y -name '*.tflite' | head -1)" $M; } \
+            || { echo "MODEL DOWNLOAD FAILED"; rm -f $M; exit 1; }
+          curl -fsSL -o app/src/main/assets/yamnet_class_map.csv "https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv" || echo "class map download failed (default index will be used)"
+          ls -la app/src/main/assets
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.9" }
+      - name: Signing key (optional)
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          # With the KEYSTORE_B64 secret the APK keeps a stable signature, so updates install over each other.
+          # Without it (for example in a fork) Gradle falls back to its own debug key.
+          if [ -n "$KEYSTORE_B64" ]; then echo "$KEYSTORE_B64" | base64 -d > app/debug.keystore; echo "Using keystore from secret"; fi
+      - run: gradle assembleDebug --no-daemon
+      - name: Name the APK and print its signing fingerprint
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk SnoreLog.apk
+          AS=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$AS" verify --print-certs SnoreLog.apk | grep -E "certificate (DN|SHA-256)" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SnoreLog-debug-apk
+          path: SnoreLog.apk
+      - name: Publish release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Works whether the release already exists (created in the web UI) or not.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" SnoreLog.apk --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" SnoreLog.apk --generate-notes --title "SnoreLog ${GITHUB_REF_NAME#v}"
+          fi

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="w_bg">@android:color/system_neutral1_800</color>
+    <color name="w_on">@android:color/system_neutral1_100</color>
+    <color name="w_sub">@android:color/system_neutral2_200</color>
+    <color name="w_btn">@android:color/system_accent1_200</color>
+    <color name="w_btn_on">@android:color/system_accent1_800</color>
+    <color name="w_btn2">@android:color/system_accent2_700</color>
+    <color name="w_btn2_on">@android:color/system_accent2_100</color>
+</resources>
