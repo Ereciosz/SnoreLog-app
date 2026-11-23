@@ -959,15 +959,55 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun export() {
-        val db = Db(this); val all = db.all(); db.close()
+        val db = Db(this)
+        val all = db.all(); val pauses = db.pauses(); val sess = db.sessions(); val tags = db.allTags()
+        db.close()
         val dir = File(getExternalFilesDir(null), "exports").also { it.mkdirs() }
-        val f = File(dir, "snore_events.csv")
         val iso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
-        f.writeText("timestamp_iso,timestamp_ms,duration_s,peak_dbfs,mean_dbfs,ai_score\n" + all.joinToString("\n") {
-            "${iso.format(Date(it.ts))},${it.ts},${"%.1f".format(Locale.US, it.durMs / 1000.0)},${"%.1f".format(Locale.US, it.peak)},${"%.1f".format(Locale.US, it.mean)},${"%.2f".format(Locale.US, it.cls)}"
+        val dayFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        fun n1(v: Double) = "%.1f".format(Locale.US, v)
+        fun nightDate(k: Int) = dayFmt.format(Night.cal(k).time)
+
+        val fe = File(dir, "snore_events.csv")
+        fe.writeText("timestamp_iso,timestamp_ms,duration_s,peak_dbfs,mean_dbfs,ai_score\n" + all.joinToString("\n") {
+            "${iso.format(Date(it.ts))},${it.ts},${n1(it.durMs / 1000.0)},${n1(it.peak)},${n1(it.mean)},${"%.2f".format(Locale.US, it.cls)}"
         })
-        val uri = FileProvider.getUriForFile(this, "$packageName.files", f)
-        startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/csv")
-            .putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), L.t("Export")))
+
+        val fp = File(dir, "snore_pauses.csv")
+        fp.writeText("timestamp_iso,timestamp_ms,night,duration_s\n" + pauses.sortedBy { it.first }.joinToString("\n") {
+            "${iso.format(Date(it.first))},${it.first},${nightDate(Night.key(it.first))},${n1(it.second)}"
+        })
+
+        val byNight = all.groupBy { Night.key(it.ts) }
+        val pauseBy = pauses.groupBy { Night.key(it.first) }
+        val recBy = sess.groupBy { Night.key(it.first) }.mapValues { en -> en.value.sumOf { it.second - it.first } / 60000.0 }
+        val fn = File(dir, "snore_nights.csv")
+        fn.writeText("night,recorded_min,snoring_min,snoring_pct,events,longest_event_s,loudest_dbfs,p95_peak_dbfs,score,suspected_pauses,pauses_per_h,longest_pause_s,tags\n" +
+            (byNight.keys + pauseBy.keys).toSortedSet().joinToString("\n") { k ->
+                val ev = byNight[k] ?: emptyList()
+                val pz = pauseBy[k] ?: emptyList()
+                val rec = recBy[k] ?: 0.0
+                val sc = Score.calc(ev, rec)
+                val recOk = rec >= 30.0
+                listOf(
+                    nightDate(k),
+                    if (recOk) n1(rec) else "",
+                    n1(sc.snoreMin),
+                    if (recOk) n1(sc.pct) else "",
+                    ev.size.toString(),
+                    if (ev.isEmpty()) "" else n1(ev.maxOf { it.durMs } / 1000.0),
+                    if (ev.isEmpty()) "" else n1(ev.maxOf { it.peak }),
+                    if (ev.isEmpty()) "" else n1(sc.p95),
+                    if (ev.isEmpty()) "" else sc.score.toString(),
+                    pz.size.toString(),
+                    if (recOk) n1(pz.size / (rec / 60.0)) else "",
+                    if (pz.isEmpty()) "" else n1(pz.maxOf { it.second }),
+                    (tags[k] ?: emptySet()).sorted().joinToString(";")
+                ).joinToString(",")
+            })
+
+        val uris = ArrayList(listOf(fn, fe, fp).map { FileProvider.getUriForFile(this, "$packageName.files", it) })
+        startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND_MULTIPLE).setType("text/csv")
+            .putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), L.t("Export")))
     }
 }
