@@ -3,6 +3,7 @@ package app.snorelog
 /** Newest first. Only the last 5 are shown. */
 object Changelog {
     val items = listOf(
+        "0.49" to "New sleep score based on the share of the night spent snoring; tap the score ring to see how it is made.",
         "0.48" to "Cleanup: removed leftover code and an unused CSV column.",
         "0.47" to "Backups skip rejected clips; new clips are about 1/3 smaller.",
         "0.46" to "Backup and restore to a ZIP file; labels no longer cut off.",

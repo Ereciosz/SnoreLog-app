@@ -44,7 +44,7 @@ object Widget {
             else -> "Not armed"
         }
         val db = Db(ctx)
-        val all = try { db.all() } finally { db.close() }
+        val (all, sessions) = try { db.all() to db.sessions() } finally { db.close() }
         val now = System.currentTimeMillis()
         val cur = Night.key(now)
         val prev = Night.keyOf(Night.cal(cur).also { it.add(java.util.Calendar.DAY_OF_MONTH, -1) })
@@ -55,7 +55,7 @@ object Widget {
         if (ev.isEmpty()) return Data(status, run, "--", "No events yet", "No events")
         val m = ev.sumOf { it.durMs } / 60000.0
         val peak = ev.maxOf { it.peak }
-        val score = (100 - m - maxOf(0.0, peak + 30)).coerceIn(0.0, 100.0).toInt()
+        val score = Score.calc(ev, sessions.filter { Night.key(it.first) == key }.sumOf { it.second - it.first } / 60000.0).score
         val hm = SimpleDateFormat("HH:mm", Locale.getDefault())
         return Data(status, run, "%.0f min".format(Locale.US, m), "$label - ${ev.size} events",
             "$label\nScore $score\n${ev.size} events\nLoudest %.0f dBFS\n${hm.format(Date(ev.first().ts))} - ${hm.format(Date(ev.last().ts))}".format(Locale.US, peak))

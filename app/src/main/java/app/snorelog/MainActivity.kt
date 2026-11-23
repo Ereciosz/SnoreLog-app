@@ -102,6 +102,17 @@ class MainActivity : AppCompatActivity() {
     private val backupOut = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/zip")) { uri -> if (uri != null) doBackup(uri) }
     private val backupIn = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri -> if (uri != null) doRestore(uri) }
     private lateinit var ring: ScoreRing
+    private var lastScore: Score.Result? = null
+    private val showScoreInfo = Runnable {
+        val r = lastScore ?: return@Runnable
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(L.f("Score %d", r.score))
+            .setMessage(
+                L.f("Snoring: %.1f min of %.0f min recorded (%.0f%%): -%d points", r.snoreMin, r.recMin, r.pct, r.snorePenalty) + "\n" +
+                L.f("Loudness: 95th percentile peak %.0f dBFS: -%d points", r.p95, r.loudPenalty) + "\n\n" +
+                L.t("Score = 100 - 1.5 x snoring % - loudness penalty (up to 15). A 95th percentile peak of -40 dBFS or quieter costs nothing, -10 dBFS or louder costs 15."))
+            .setPositiveButton(L.t("Close"), null).show()
+    }
     private lateinit var tl: TimelineView
     private lateinit var bars: BarChartView
     private lateinit var cal: CalendarView
@@ -232,7 +243,10 @@ class MainActivity : AppCompatActivity() {
             addView(button(">", true) { shift(1) })
         }
         ring = ScoreRing(this)
-        ring.setOnClickListener { Egg.tap(this) }
+        ring.setOnClickListener {
+            ring.removeCallbacks(showScoreInfo)
+            if (!Egg.tap(this)) ring.postDelayed(showScoreInfo, 900)
+        }
         loudBtn = button("", true) { loudClip?.let { load(it) } }.apply { visibility = View.GONE }
         statsTv = tv("", BODY).apply { setLineSpacing(0f, 1.3f) }
         val top = LinearLayout(this).apply {
@@ -783,7 +797,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             val m = ev.sumOf { it.durMs } / 60000.0
             val peak = ev.maxOf { it.peak }
-            val score = (100 - m - maxOf(0.0, peak + 30)).coerceIn(0.0, 100.0).toInt()
+            val sc = Score.calc(ev, sess.filter { Night.key(it.first) == selected }.sumOf { it.second - it.first } / 60000.0)
+            val score = sc.score
+            lastScore = sc
             val others = bars.nights.takeLast(7).filter { it.first != selected }.map { it.second }
             ring.score = score
             val lc = ev.maxByOrNull { it.peak }!!

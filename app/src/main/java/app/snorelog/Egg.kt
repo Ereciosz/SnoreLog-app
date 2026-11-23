@@ -23,11 +23,13 @@ object Egg {
     private var taps = 0
     private var last = 0L
 
-    fun tap(a: Activity) {
+    /** Returns true when the egg was just triggered. */
+    fun tap(a: Activity): Boolean {
         val now = System.currentTimeMillis()
         taps = if (now - last > 1500) 1 else taps + 1
         last = now
-        if (taps >= 7) { taps = 0; show(a) }
+        if (taps >= 7) { taps = 0; show(a); return true }
+        return false
     }
 
     private const val CYCLE = 3.0   // seconds: inhale 0-1, rest, snort 1.5-2.5, rest
