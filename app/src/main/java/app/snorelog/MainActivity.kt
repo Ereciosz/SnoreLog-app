@@ -238,7 +238,7 @@ class MainActivity : AppCompatActivity() {
         ring = ScoreRing(this)
         ring.setOnClickListener {
             ring.removeCallbacks(showScoreInfo)
-            if (!Egg.tap(this)) ring.postDelayed(showScoreInfo, 900)
+            if (!Egg.tap(this)) ring.postDelayed(showScoreInfo, 350)
         }
         loudBtn = button("", true) { loudClip?.let { load(it) } }.apply { visibility = View.GONE }
         statsTv = tv("", BODY).apply { setLineSpacing(0f, 1.3f) }
@@ -282,6 +282,8 @@ class MainActivity : AppCompatActivity() {
             addView(playBtn, LinearLayout.LayoutParams(WRAP, WRAP))
             addView(seek, LinearLayout.LayoutParams(0, WRAP, 1f).apply { marginStart = dp(8); marginEnd = dp(8) })
             addView(timeTv, LinearLayout.LayoutParams(WRAP, WRAP))
+            addView(button("\u2715", true) { closePlayer() }.apply { minWidth = 0; minimumWidth = 0; contentDescription = L.t("Close player") },
+                LinearLayout.LayoutParams(WRAP, WRAP).apply { marginStart = dp(8) })
         }
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         rejList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -684,6 +686,14 @@ class MainActivity : AppCompatActivity() {
         val p = ArrayList<String>()
         if (e.cls >= 0) p.add("AI %.2f".format(Locale.US, e.cls))
         return p.joinToString(", ")
+    }
+
+    private fun closePlayer() {
+        enhancer?.release(); enhancer = null
+        player?.release(); player = null; current = null
+        playBtn.text = "Play"; seek.value = 0f
+        tl.selId = -1L; tl.invalidate()
+        playerCard.visibility = View.GONE; miniBar.visibility = View.GONE
     }
 
     private fun togglePlay() {
