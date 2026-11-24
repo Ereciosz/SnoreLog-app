@@ -9,8 +9,8 @@ android {
         applicationId = "app.snorelog"
         minSdk = 29
         targetSdk = 35
-        versionCode = 51
-        versionName = "0.51"
+        versionCode = 52
+        versionName = "0.52"
     }
     signingConfigs {
         getByName("debug") {

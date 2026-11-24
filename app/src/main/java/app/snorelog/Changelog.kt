@@ -3,6 +3,7 @@ package app.snorelog
 /** Newest first. Only the last 5 are shown. */
 object Changelog {
     val items = listOf(
+        "0.52" to "Fixes the Trends calendar opening on an empty year, and tapping a bar or a calendar day now opens that night.",
         "0.51" to "New OLED black theme and a High contrast option in Settings > Appearance.",
         "0.50" to "Export now shares three CSV files: nights summary, events and suspected breathing pauses.",
         "0.49" to "New sleep score based on the share of the night spent snoring; tap the score ring to see how it is made.",

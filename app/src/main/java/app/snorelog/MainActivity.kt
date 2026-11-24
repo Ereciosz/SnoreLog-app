@@ -299,10 +299,10 @@ class MainActivity : AppCompatActivity() {
             card(sec("Tags for this night"), chipGroup), playerCard, card(evHead, list), rejCard)
 
         // ---- Trends page
-        bars = BarChartView(this).apply { onPick = { selected = it; cal.month = Night.cal(it); refresh() } }
+        bars = BarChartView(this).apply { onPick = { this@MainActivity.selected = it; cal.month = Night.cal(it); refresh() } }
         cal = CalendarView(this).apply {
-            month = Night.cal(selected)
-            onPick = { selected = it; bottomNav.selectedItemId = 0 }
+            month = Night.cal(this@MainActivity.selected)
+            onPick = { this@MainActivity.selected = it; bottomNav.selectedItemId = 0 }
         }
         monthLabel = tv("", TITLE).apply { gravity = Gravity.CENTER }
         val monthNav = LinearLayout(this).apply {
