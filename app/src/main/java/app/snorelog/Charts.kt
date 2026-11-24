@@ -229,12 +229,9 @@ class TimelineView(c: Context) : View(c) {
         p.textSize = dp(11f); p.textAlign = Paint.Align.CENTER; p.strokeWidth = 1f
         val clip = Path().apply { addRoundRect(plot, dp(12f), dp(12f), Path.Direction.CW) }
         cv.save(); cv.clipPath(clip)
-        // Level guides (-40 and -20 dBFS)
+        // Guide at 50 % of the bucket
         p.style = Paint.Style.STROKE; p.color = grid
-        for (db in doubleArrayOf(-40.0, -20.0)) {
-            val y = bot - ((db + 60) / 60).toFloat() * (bot - top)
-            cv.drawLine(l, y, r, y, p)
-        }
+        cv.drawLine(l, (top + bot) / 2, r, (top + bot) / 2, p)
         var t = base + ((lo - base + step - 1) / step) * step
         while (t <= hi) {
             val x = l + (t - lo) / span * (r - l)
@@ -249,30 +246,40 @@ class TimelineView(c: Context) : View(c) {
             p.color = pauseColor; cv.drawRect(x, top, x + w, bot, p)
             p.color = pauseCap; cv.drawRoundRect(x, top, x + w, top + dp(4f), dp(2f), dp(2f), p)
         }
-        // Merge events that would touch on screen into one block, so the chart reads as episodes.
-        val gapMs = (dp(3f) / (r - l) * span).toLong()
-        val vis = events.filter { it.ts + it.durMs >= lo && it.ts <= hi }.sortedBy { it.ts }
-        var open = false; var gs = 0L; var ge = 0L; var gl = 0.0
-        fun flush() {
-            if (!open) return
-            open = false
-            val x = l + (gs - lo) / span * (r - l)
-            val w = max(dp(3f), (ge - gs) / span * (r - l))
-            val rad = min(dp(3f), w / 2)
-            p.style = Paint.Style.FILL; p.color = Night.heat(gl, pri)
-            cv.drawRoundRect(x, bot - gl.toFloat() * (bot - top), x + w, bot + rad, rad, rad, p)
-        }
-        for (e in vis) {
+        // Fixed time buckets: height = share of the bucket spent snoring, colour = loudest peak in it.
+        val bSteps = longArrayOf(5_000L, 10_000L, 30_000L, 60_000L, 120_000L, 300_000L, 600_000L, 900_000L, 1800_000L)
+        val bm = bSteps.firstOrNull { span / it <= 48 } ?: bSteps.last()
+        val b0 = lo / bm * bm
+        val n = ((hi - b0) / bm + 1).toInt()
+        val sn = LongArray(n + 1); val pk = DoubleArray(n + 1)
+        for (e in events) {
+            if (e.ts + e.durMs < lo || e.ts > hi) continue
             val lvl = ((e.peak + 60) / 60).coerceIn(0.08, 1.0)
-            if (open && e.ts - ge <= gapMs) { ge = max(ge, e.ts + e.durMs); gl = max(gl, lvl) }
-            else { flush(); open = true; gs = e.ts; ge = e.ts + e.durMs; gl = lvl }
+            var i = max(0, ((e.ts - b0) / bm).toInt())
+            val iEnd = min(n, ((e.ts + e.durMs - b0) / bm).toInt())
+            while (i <= iEnd) {
+                val s0 = b0 + i * bm
+                val ov = min(e.ts + e.durMs, s0 + bm) - max(e.ts, s0)
+                if (ov > 0) { sn[i] += ov; pk[i] = max(pk[i], lvl) }
+                i++
+            }
         }
-        flush()
-        vis.firstOrNull { it.id == selId }?.let { e ->
-            val x = l + (e.ts - lo) / span * (r - l)
-            val w = max(dp(3f), e.durMs / span * (r - l))
+        for (i in 0..n) {
+            if (sn[i] <= 0) continue
+            val bs = b0 + i * bm
+            val x0 = l + (bs - lo) / span * (r - l)
+            val x1 = l + (bs + bm - lo) / span * (r - l)
+            val gap = min(dp(2f), (x1 - x0) * 0.2f)
+            val frac = (sn[i].toDouble() / bm).coerceIn(0.06, 1.0).toFloat()
+            val rad = min(dp(3f), (x1 - x0 - gap) / 2)
+            p.style = Paint.Style.FILL; p.color = Night.heat(pk[i], pri)
+            cv.drawRoundRect(x0 + gap / 2, bot - frac * (bot - top), x1 - gap / 2, bot + rad, rad, rad, p)
+        }
+        events.firstOrNull { it.id == selId }?.let { e ->
+            val x0 = l + ((e.ts - b0) / bm * bm + b0 - e.ts + e.ts - lo) / span * (r - l)
+            val x1 = l + ((e.ts + e.durMs - b0) / bm * bm + b0 + bm - lo) / span * (r - l)
             p.color = on; p.style = Paint.Style.STROKE; p.strokeWidth = dp(1.5f)
-            cv.drawRoundRect(x - dp(1f), top + dp(1f), x + w + dp(1f), bot, dp(2f), dp(2f), p)
+            cv.drawRoundRect(x0, top + dp(1f), max(x1, x0 + dp(4f)), bot, dp(3f), dp(3f), p)
             p.style = Paint.Style.FILL; p.strokeWidth = 1f
         }
         cv.restore()

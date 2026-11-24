@@ -309,7 +309,7 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) }
             addView(col(statusTitle, statusText).apply { setPadding(dp(16), dp(12), dp(16), dp(12)) })
         }
-        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
+        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Bar height is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
             card(sec("Tags for this night"), chipGroup), playerCard, card(evHead, list), rejCard)
 
         // ---- Trends page

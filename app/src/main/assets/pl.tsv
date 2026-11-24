@@ -17,7 +17,7 @@ Night	Noc
 Trends	Trendy
 Settings	Ustawienia
 Timeline	Oś czasu
-Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.	Ściśnij palce, by przybliżyć, przeciągnij, by przesunąć, dotknij słupka, by odtworzyć, dwukrotnie dotknij, by przełączyć między zdarzeniami a całą nocą.
+Bar height is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.	Wysokość słupka to udział czasu spędzonego na chrapaniu. Ściśnij palce, by przybliżyć, przeciągnij, by przesunąć, dotknij słupka, by odtworzyć, dwukrotnie dotknij, by przełączyć między zdarzeniami a całą nocą.
 Tags for this night	Znaczniki tej nocy
 Alcohol	Alkohol
 Congestion	Zatkany nos
@@ -215,7 +215,6 @@ Detect farts (for fun)	Wykrywaj bąki (dla zabawy)
 Experimental. When the AI hears a fart more strongly than snoring, the clip is counted as a fart instead of snoring. Only sounds of 0.8 s or longer are checked. Fart clips are kept for the normal retention time.	Eksperymentalne. Gdy AI słyszy bąka wyraźniej niż chrapanie, nagranie jest liczone jako bąk, a nie chrapanie. Sprawdzane są tylko dźwięki trwające co najmniej 0,8 s. Nagrania bąków są przechowywane przez zwykły czas przechowywania.
 ~fart ([\d.]+)	bąk $1
 ~Farts: (\d+)	Bąki: $1
-
 ~Playback boost: \+(\d+) dB	Wzmocnienie odtwarzania: +$1 dB
 Would trigger	Wyzwoliłoby
 ~([\d.,]+) min of snoring	$1 min chrapania
@@ -230,7 +229,6 @@ Allow	Zezwól
 Don't remind me	Nie przypominaj
 What's new	Co nowego
 Made with Claude by Erecik ♥	Stworzone z Claude przez Erecika ♥
-
 ~Updated to (v[\d.]+): (.*)	Zaktualizowano do $1: $2
 Healthy sleep habits (website)	Zdrowe nawyki snu (strona www)
 You are up after your alarm, so monitoring stopped.	Wstałeś po budziku, więc nasłuch został zatrzymany.
@@ -281,3 +279,4 @@ Longest	Najdłuższa
 Tap a time to zoom the timeline to it.	Dotknij godziny, aby przybliżyć na osi czasu.
 Redesigned suspected pauses (summary and tappable time chips that zoom the timeline) and a Material 3 style timeline chart.	Przeprojektowane podejrzane przerwy (podsumowanie i dotykalne godziny przybliżające oś czasu) oraz wykres osi czasu w stylu Material 3.
 Timeline merges nearby events into snoring blocks; pause bands and the pause summary are hidden when pause detection is off.	Oś czasu łączy bliskie zdarzenia w bloki chrapania; pasy przerw i ich podsumowanie są ukryte, gdy wykrywanie przerw jest wyłączone.
+Timeline now shows fixed time buckets: bar height is the share of time spent snoring.	Oś czasu pokazuje teraz stałe przedziały czasu: wysokość słupka to udział czasu spędzonego na chrapaniu.

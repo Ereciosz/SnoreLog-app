@@ -3,6 +3,7 @@ package app.snorelog
 /** Newest first. Only the last 5 are shown. */
 object Changelog {
     val items = listOf(
+        "0.52.2" to "Timeline now shows fixed time buckets: bar height is the share of time spent snoring.",
         "0.52.1" to "Timeline merges nearby events into snoring blocks; pause bands and the pause summary are hidden when pause detection is off.",
         "0.52" to "Redesigned suspected pauses (summary and tappable time chips that zoom the timeline) and a Material 3 style timeline chart.",
         "0.51.2" to "Score breakdown opens faster; the player can be closed with an x.",
