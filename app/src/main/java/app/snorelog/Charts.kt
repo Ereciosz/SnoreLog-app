@@ -15,7 +15,10 @@ object Night {
     fun keyOf(c: Calendar) = c.get(Calendar.YEAR) * 10000 + (c.get(Calendar.MONTH) + 1) * 100 + c.get(Calendar.DAY_OF_MONTH)
     fun key(ts: Long) = keyOf(Calendar.getInstance().apply { timeInMillis = ts - 12 * 3600_000L })
     fun cal(key: Int): Calendar = Calendar.getInstance().apply { clear(); set(key / 10000, (key / 100) % 100 - 1, key % 100) }
-    fun heat(t: Double, base: Int): Int = Color.argb((70 + 185 * t.coerceIn(0.0, 1.0)).toInt(), Color.red(base), Color.green(base), Color.blue(base))
+    fun heat(t: Double, base: Int): Int {
+        val lo = if (Look.contrast) 190 else if (Look.oled) 110 else 70
+        return Color.argb((lo + (255 - lo) * t.coerceIn(0.0, 1.0)).toInt(), Color.red(base), Color.green(base), Color.blue(base))
+    }
 }
 
 private fun View.dp(v: Float) = v * resources.displayMetrics.density
@@ -23,8 +26,14 @@ private fun View.attr(a: Int) = MaterialColors.getColor(this, a, Color.GRAY)
 private val View.on get() = attr(com.google.android.material.R.attr.colorOnSurface)
 private val View.sub get() = attr(com.google.android.material.R.attr.colorOnSurfaceVariant)
 private val View.pri get() = attr(com.google.android.material.R.attr.colorPrimary)
-private val View.grid get() = (on and 0x00FFFFFF) or 0x33000000
-private val View.axis get() = (on and 0x00FFFFFF) or 0x55000000
+private fun withAlpha(c: Int, a: Int) = (c and 0x00FFFFFF) or (a shl 24)
+private val View.grid get() = withAlpha(on, if (Look.contrast) 0x99 else if (Look.oled) 0x55 else 0x33)
+private val View.axis get() = withAlpha(on, if (Look.contrast) 0xFF else if (Look.oled) 0x99 else 0x55)
+private val pauseColor get() = when {
+    Look.contrast -> if (Look.night) 0xCC00E5FF.toInt() else 0xCC006064.toInt()
+    Look.oled -> 0x9900BCD4.toInt()
+    else -> 0x5500BCD4
+}
 
 class CalendarView(c: Context) : View(c) {
     var month: Calendar = Calendar.getInstance()
@@ -212,7 +221,7 @@ class TimelineView(c: Context) : View(c) {
         p.style = Paint.Style.STROKE; p.color = axis; cv.drawLine(l, bot, r, bot, p)
         p.style = Paint.Style.FILL
         cv.save(); cv.clipRect(l, 0f, r, bot + 1f)
-        p.color = 0x5500BCD4
+        p.color = pauseColor
         for ((pt, pd) in pauses) {
             val x = l + (pt - lo) / span * (r - l)
             cv.drawRect(x, top, x + max(dp(3f), (pd * 1000 / span).toFloat() * (r - l)), bot, p)
@@ -259,7 +268,7 @@ class BarChartView(c: Context) : View(c) {
             val x1 = slot * (i + 1) - slot * .15f
             val h = if (v > 0) max(dp(2f), (v / mx).toFloat() * maxH) else 0f
             p.style = Paint.Style.FILL
-            p.color = if (k == selected) pri else ((pri and 0x00FFFFFF) or 0x88000000.toInt())
+            p.color = if (k == selected) pri else withAlpha(pri, if (Look.contrast) 0x99 else if (Look.oled) 0xBB else 0x88)
             if (h > 0) cv.drawRoundRect(x0, bot - h, x1, bot, dp(3f), dp(3f), p)
             p.color = if (k == selected) on else sub
             cv.drawText((k % 100).toString(), (x0 + x1) / 2, height - dp(4f), p)
@@ -289,10 +298,11 @@ class ScoreRing(c: Context) : View(c) {
         p.color = grid
         cv.drawArc(rect, -90f, 360f, false, p)
         if (score >= 0) {
+            val darkInk = Look.contrast && !Look.night
             p.color = when {
-                score >= 70 -> 0xFF66BB6A.toInt()
-                score >= 40 -> 0xFFFFB300.toInt()
-                else -> 0xFFFF7043.toInt()
+                score >= 70 -> if (darkInk) 0xFF1B5E20.toInt() else 0xFF66BB6A.toInt()
+                score >= 40 -> if (darkInk) 0xFF8A5A00.toInt() else 0xFFFFB300.toInt()
+                else -> if (darkInk) 0xFFBF360C.toInt() else 0xFFFF7043.toInt()
             }
             cv.drawArc(rect, -90f, 360f * score / 100f, false, p)
         }
@@ -330,7 +340,7 @@ class LevelView(c: Context) : View(c) {
         for (i in 0 until n) {
             val a = amp(levels[i]) * mid
             val above = thr.isNaN() || levels[i] > thr
-            p.color = if (above) pri else (sub and 0x00FFFFFF) or 0x99000000.toInt()
+            p.color = if (above) pri else withAlpha(sub, if (Look.contrast) 0xCC else 0x99)
             cv.drawRect(i * bw, mid - a, i * bw + max(bw - 1f, 1.5f), mid + a, p)
         }
         if (!thr.isNaN()) {

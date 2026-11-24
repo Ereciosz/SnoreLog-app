@@ -156,9 +156,13 @@ class Settings(c: Context) {
         get() = p.getBoolean("a", false)
         set(v) { p.edit().putBoolean("a", v).apply() }
 
-    var themeMode: Int // 0 system, 1 light, 2 dark
+    var themeMode: Int // 0 system, 1 light, 2 dark, 3 OLED black
         get() = p.getInt("tm", 0)
         set(v) { p.edit().putInt("tm", v).apply() }
+
+    var contrast: Boolean
+        get() = p.getBoolean("hc", false)
+        set(v) { p.edit().putBoolean("hc", v).apply() }
 
     var dynamic: Boolean
         get() = p.getBoolean("dy", true)

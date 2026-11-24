@@ -35,6 +35,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         L.init(this)
+        Look.contrast = Settings(this).contrast
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(Look.delegateMode(Settings(this).themeMode))
         val prev = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             Diag.log(this@App, "CRASH in thread ${t.name}: " + e.stackTraceToString().take(1500))

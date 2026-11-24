@@ -269,3 +269,7 @@ Backup: a ZIP file is created only when you tap Back up, and saved where you cho
 Snoring: %.1f min of %.0f min recorded (%.0f%%): -%d points	Chrapanie: %.1f min z %.0f min nagrania (%.0f%%): -%d pkt
 Loudness: 95th percentile peak %.0f dBFS: -%d points	Głośność: szczyt 95. percentyla %.0f dBFS: -%d pkt
 Score = 100 - 1.5 x snoring % - loudness penalty (up to 15). A 95th percentile peak of -40 dBFS or quieter costs nothing, -10 dBFS or louder costs 15.	Wynik = 100 - 1,5 x % chrapania - kara za głośność (do 15). Szczyt 95. percentyla -40 dBFS lub cichszy nic nie kosztuje, -10 dBFS lub głośniejszy kosztuje 15.
+OLED: pure black background, saves power on OLED screens.	OLED: czysta czerń w tle, oszczędza energię na ekranach OLED.
+High contrast	Wysoki kontrast
+Pure black or white background, bold outlines and maximum text contrast. Replaces dynamic colours.	Czysto czarne lub białe tło, grube obrysy i maksymalny kontrast tekstu. Zastępuje kolory dynamiczne.
+high contrast	wysoki kontrast

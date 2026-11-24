@@ -12,11 +12,9 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.MaterialColors
 import java.util.Locale
 import kotlin.math.log10
@@ -38,9 +36,7 @@ class LiveActivity : AppCompatActivity() {
 
     override fun onCreate(b: Bundle?) {
         val st = Settings(this)
-        AppCompatDelegate.setDefaultNightMode(when (st.themeMode) { 1 -> AppCompatDelegate.MODE_NIGHT_NO; 2 -> AppCompatDelegate.MODE_NIGHT_YES; else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM })
-        if (st.dynamic && DynamicColors.isDynamicColorAvailable()) DynamicColors.applyToActivityIfAvailable(this)
-        else theme.applyStyle(listOf(R.style.AccentOrange, R.style.AccentTeal, R.style.AccentViolet, R.style.AccentGreen)[st.accent.coerceIn(0, 3)], true)
+        Look.apply(this, st)
         super.onCreate(b)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val sub = MaterialColors.getColor(this, M.attr.colorOnSurfaceVariant, Color.GRAY)

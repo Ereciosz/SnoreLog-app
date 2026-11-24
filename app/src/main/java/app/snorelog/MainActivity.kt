@@ -36,7 +36,6 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
@@ -55,8 +54,8 @@ class MainActivity : AppCompatActivity() {
     private val LABEL = M.style.TextAppearance_Material3_LabelMedium
 
     private val TAGS = listOf("Alcohol", "Congestion", "Late meal", "Back sleeping", "Stress/tired")
+    private val THEMES = listOf("System", "Light", "Dark", "OLED")
     private val ACCENTS = listOf("Orange", "Teal", "Violet", "Green")
-    private val ACCENT_STYLES = listOf(R.style.AccentOrange, R.style.AccentTeal, R.style.AccentViolet, R.style.AccentGreen)
     private val chips = LinkedHashMap<String, Chip>()
     private val pages = ArrayList<View>()
 
@@ -155,11 +154,6 @@ class MainActivity : AppCompatActivity() {
     private fun fmtMs(ms: Int) = "%d:%02d".format(ms / 60000, (ms / 1000) % 60)
     private fun clr(attr: Int) = MaterialColors.getColor(this, attr, Color.GRAY)
     private fun toast(t: String) = Toast.makeText(this, L.t(t), Toast.LENGTH_SHORT).show()
-    private fun nightMode(i: Int) = when (i) {
-        1 -> AppCompatDelegate.MODE_NIGHT_NO
-        2 -> AppCompatDelegate.MODE_NIGHT_YES
-        else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-    }
     private fun tv(t: String, style: Int, color: Int? = null) = TextView(this).apply {
         text = t; setTextAppearance(style); if (color != null) setTextColor(color)
     }
@@ -167,6 +161,7 @@ class MainActivity : AppCompatActivity() {
     private fun col(vararg v: View) = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; v.forEach { addView(it) } }
     private fun card(vararg v: View) = MaterialCardView(this, null, M.attr.materialCardViewOutlinedStyle).apply {
         layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(12) }
+        if (Look.contrast) { strokeWidth = dp(2); strokeColor = clr(M.attr.colorOutline) }
         addView(col(*v).apply { setPadding(dp(16), dp(14), dp(16), dp(14)) })
     }
     private fun button(t: String, outlined: Boolean = false, onClick: () -> Unit): MaterialButton {
@@ -215,9 +210,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(b: Bundle?) {
         val st = Settings(this)
-        AppCompatDelegate.setDefaultNightMode(nightMode(st.themeMode))
-        if (st.dynamic && DynamicColors.isDynamicColorAvailable()) DynamicColors.applyToActivityIfAvailable(this)
-        else theme.applyStyle(ACCENT_STYLES[st.accent.coerceIn(0, ACCENT_STYLES.size - 1)], true)
+        Look.apply(this, st)
         super.onCreate(b)
         selected = Night.key(System.currentTimeMillis())
         val sub = clr(M.attr.colorOnSurfaceVariant)
@@ -255,7 +248,7 @@ class MainActivity : AppCompatActivity() {
             addView(statsTv, LinearLayout.LayoutParams(0, WRAP, 1f).apply { marginStart = dp(16) })
         }
         tl = TimelineView(this).apply { onPick = { e -> load(e) } }
-        pauseTv = tv("", BODY, Color.parseColor("#26C6DA")).apply { setPadding(0, dp(8), 0, 0) }
+        pauseTv = tv("", BODY, Color.parseColor(if (!Look.night) (if (Look.contrast) "#006064" else "#00838F") else "#26C6DA")).apply { setPadding(0, dp(8), 0, 0) }
         val selColor = clr(M.attr.colorSecondaryContainer)
         val chipGroup = ChipGroup(this)
         TAGS.forEach { t ->
@@ -365,8 +358,11 @@ class MainActivity : AppCompatActivity() {
                 tv("Language", BODY),
                 toggleGroup(listOf("System", "English", "Polski"), st.lang) { st.lang = it; L.mode = it; recreate() },
                 tv("Theme", BODY).apply { setPadding(0, dp(12), 0, 0) },
-                toggleGroup(listOf("System", "Light", "Dark"), st.themeMode) { st.themeMode = it; AppCompatDelegate.setDefaultNightMode(nightMode(it)) },
-                switch("Dynamic colours (Android 12+)", st.dynamic) { st.dynamic = it; recreate() },
+                toggleGroup(THEMES, st.themeMode) { st.themeMode = it; AppCompatDelegate.setDefaultNightMode(Look.delegateMode(it)); recreate() },
+                tv("OLED: pure black background, saves power on OLED screens.", LABEL, sub).apply { setPadding(0, dp(4), 0, 0) },
+                switch("High contrast", st.contrast) { st.contrast = it; recreate() }.apply { setPadding(0, dp(12), 0, dp(2)) },
+                tv("Pure black or white background, bold outlines and maximum text contrast. Replaces dynamic colours.", LABEL, sub),
+                switch("Dynamic colours (Android 12+)", st.dynamic) { st.dynamic = it; recreate() }.apply { isEnabled = !st.contrast },
                 tv("Accent colour (used when dynamic colours are off)", BODY).apply { setPadding(0, dp(8), 0, dp(4)) },
                 toggleGroup(ACCENTS, st.accent) { st.accent = it; recreate() })),
             page(card(
@@ -459,7 +455,7 @@ class MainActivity : AppCompatActivity() {
         val subSums = subTitles.map { tv("", LABEL, sub) }
         subSummaries = {
             val on = { b: Boolean -> L.t(if (b) "on" else "off") }
-            subSums[0].text = L.f("%s theme, dynamic colours %s", L.t(listOf("System", "Light", "Dark")[st.themeMode.coerceIn(0, 2)]), on(st.dynamic))
+            subSums[0].text = L.f("%s theme, dynamic colours %s", L.t(THEMES[st.themeMode.coerceIn(0, THEMES.size - 1)]), on(st.dynamic && !st.contrast)) + (if (st.contrast) ", " + L.t("high contrast") else "")
             subSums[1].text = L.f("Alarm disarm %s, screen-off only %s", on(st.alarmOn), on(st.screenOffOnly))
             subSums[2].text = L.f("Trigger +%d dB, AI score %.2f", st.margin, st.aiPct / 100.0)
             subSums[3].text = L.f("Watchdog %s, bedside mode, battery settings", on(st.watchdog))
