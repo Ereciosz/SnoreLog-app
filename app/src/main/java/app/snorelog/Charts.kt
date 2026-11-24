@@ -249,20 +249,31 @@ class TimelineView(c: Context) : View(c) {
             p.color = pauseColor; cv.drawRect(x, top, x + w, bot, p)
             p.color = pauseCap; cv.drawRoundRect(x, top, x + w, top + dp(4f), dp(2f), dp(2f), p)
         }
-        for (e in events) {
-            if (e.ts + e.durMs < lo || e.ts > hi) continue
+        // Merge events that would touch on screen into one block, so the chart reads as episodes.
+        val gapMs = (dp(3f) / (r - l) * span).toLong()
+        val vis = events.filter { it.ts + it.durMs >= lo && it.ts <= hi }.sortedBy { it.ts }
+        var open = false; var gs = 0L; var ge = 0L; var gl = 0.0
+        fun flush() {
+            if (!open) return
+            open = false
+            val x = l + (gs - lo) / span * (r - l)
+            val w = max(dp(3f), (ge - gs) / span * (r - l))
+            val rad = min(dp(3f), w / 2)
+            p.style = Paint.Style.FILL; p.color = Night.heat(gl, pri)
+            cv.drawRoundRect(x, bot - gl.toFloat() * (bot - top), x + w, bot + rad, rad, rad, p)
+        }
+        for (e in vis) {
+            val lvl = ((e.peak + 60) / 60).coerceIn(0.08, 1.0)
+            if (open && e.ts - ge <= gapMs) { ge = max(ge, e.ts + e.durMs); gl = max(gl, lvl) }
+            else { flush(); open = true; gs = e.ts; ge = e.ts + e.durMs; gl = lvl }
+        }
+        flush()
+        vis.firstOrNull { it.id == selId }?.let { e ->
             val x = l + (e.ts - lo) / span * (r - l)
             val w = max(dp(3f), e.durMs / span * (r - l))
-            val lvl = ((e.peak + 60) / 60).coerceIn(0.08, 1.0)
-            p.style = Paint.Style.FILL
-            p.color = Night.heat(lvl, pri)
-            val rad = min(dp(2f), w / 2)
-            cv.drawRoundRect(x, bot - lvl.toFloat() * (bot - top), x + w, bot + rad, rad, rad, p)
-            if (e.id == selId) {
-                p.color = on; p.style = Paint.Style.STROKE; p.strokeWidth = dp(1.5f)
-                cv.drawRoundRect(x - dp(1f), top + dp(1f), x + w + dp(1f), bot, rad, rad, p)
-                p.style = Paint.Style.FILL; p.strokeWidth = 1f
-            }
+            p.color = on; p.style = Paint.Style.STROKE; p.strokeWidth = dp(1.5f)
+            cv.drawRoundRect(x - dp(1f), top + dp(1f), x + w + dp(1f), bot, dp(2f), dp(2f), p)
+            p.style = Paint.Style.FILL; p.strokeWidth = 1f
         }
         cv.restore()
         // Time labels under the plot

@@ -832,8 +832,8 @@ class MainActivity : AppCompatActivity() {
 
         val hrs = sess.filter { Night.key(it.first) == selected }.sumOf { it.second - it.first } / 3600_000.0
         val np = pauseAll.filter { Night.key(it.first) == selected }.sortedBy { it.first }
-        tl.pauses = np; tl.invalidate()
-        if (np.isNotEmpty() || (st.apnea && hrs > 0)) {
+        tl.pauses = if (st.apnea) np else emptyList(); tl.invalidate()
+        if (st.apnea && (np.isNotEmpty() || hrs > 0)) {
             val idx = if (hrs > 0.1) "%.1f".format(np.size / hrs) else "-"
             pauseStats.removeAllViews(); pauseChips.removeAllViews()
             fun stat(v: String, l: String) = pauseStats.addView(col(
