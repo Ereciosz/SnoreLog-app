@@ -257,7 +257,7 @@ class TimelineView(c: Context) : View(c) {
             p.color = pauseColor; cv.drawRect(x, top, x + w, bot, p)
             p.color = pauseCap; cv.drawRoundRect(x, top, x + w, top + dp(4f), dp(2f), dp(2f), p)
         }
-        // Fixed time buckets: height = share of the bucket spent snoring, colour = loudest peak in it.
+        // Fixed time buckets: height = loudest peak in it (scaled to the tallest visible), opacity = share of the bucket spent snoring.
         val bm = bucketMs(span.toLong())
         val b0 = lo / bm * bm
         val n = ((hi - b0) / bm + 1).toInt()
@@ -274,15 +274,17 @@ class TimelineView(c: Context) : View(c) {
                 i++
             }
         }
+        val maxPk = max(pk.max(), 0.08)
         for (i in 0..n) {
             if (sn[i] <= 0) continue
             val bs = b0 + i * bm
             val x0 = l + (bs - lo) / span * (r - l)
             val x1 = l + (bs + bm - lo) / span * (r - l)
             val gap = min(dp(2f), (x1 - x0) * 0.2f)
-            val frac = (sn[i].toDouble() / bm).coerceIn(0.06, 1.0).toFloat()
+            val frac = (pk[i] / maxPk).toFloat().coerceIn(0.06f, 1f)
+            val share = (sn[i].toDouble() / bm).coerceIn(0.05, 1.0)
             val rad = min(dp(3f), (x1 - x0 - gap) / 2)
-            p.style = Paint.Style.FILL; p.color = Night.heat(pk[i], pri)
+            p.style = Paint.Style.FILL; p.color = Night.heat(share, pri)
             cv.drawRoundRect(x0 + gap / 2, bot - frac * (bot - top), x1 - gap / 2, bot + rad, rad, rad, p)
         }
         events.firstOrNull { it.id == selId }?.let { e ->
