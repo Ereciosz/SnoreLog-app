@@ -178,7 +178,8 @@ class TimelineView(c: Context) : View(c) {
             if (vHi > vLo) { vLo = 0; vHi = 0 } else showFull = !showFull
             invalidate(); return true
         }
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
+        // Confirmed single tap only: a double tap zooms and must not also play a clip.
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             val (lo, hi) = range()
             val span = (hi - lo).toFloat()
             val tt = lo + (e.x - PL) / (PR - PL) * span
