@@ -280,3 +280,4 @@ Tap a time to zoom the timeline to it.	Dotknij godziny, aby przybliżyć na osi 
 Redesigned suspected pauses (summary and tappable time chips that zoom the timeline) and a Material 3 style timeline chart.	Przeprojektowane podejrzane przerwy (podsumowanie i dotykalne godziny przybliżające oś czasu) oraz wykres osi czasu w stylu Material 3.
 Timeline merges nearby events into snoring blocks; pause bands and the pause summary are hidden when pause detection is off.	Oś czasu łączy bliskie zdarzenia w bloki chrapania; pasy przerw i ich podsumowanie są ukryte, gdy wykrywanie przerw jest wyłączone.
 Timeline now shows fixed time buckets: bar height is the share of time spent snoring.	Oś czasu pokazuje teraz stałe przedziały czasu: wysokość słupka to udział czasu spędzonego na chrapaniu.
+Timeline bars are twice as fine and every bar can be tapped to play.	Paski na osi czasu są dwa razy drobniejsze i każdy można dotknąć, aby odtworzyć.

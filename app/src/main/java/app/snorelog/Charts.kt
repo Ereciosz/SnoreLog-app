@@ -145,6 +145,12 @@ class TimelineView(c: Context) : View(c) {
         return max(f.first, a - pad) to min(f.second, b + pad)
     }
 
+    /** Width of one chart column for the visible span: about 96 columns across. */
+    private fun bucketMs(span: Long): Long {
+        val steps = longArrayOf(5_000L, 10_000L, 30_000L, 60_000L, 120_000L, 300_000L, 600_000L, 900_000L, 1800_000L)
+        return steps.firstOrNull { span / it <= 96 } ?: steps.last()
+    }
+
     /** Zooms to a moment, e.g. a suspected pause, with a few minutes of context around it. */
     fun focus(ts: Long, durMs: Long) {
         val mid = ts + durMs / 2
@@ -192,11 +198,16 @@ class TimelineView(c: Context) : View(c) {
         // Confirmed single tap only: a double tap zooms and must not also play a clip.
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             val (lo, hi) = range()
-            val span = (hi - lo).toFloat()
-            val tt = lo + (e.x - PL) / (PR - PL) * span
-            val tol = dp(14f) / (PR - PL) * span
-            val best = events.filter { tt >= it.ts - tol && tt <= it.ts + it.durMs + tol }
-                .minByOrNull { kotlin.math.abs((it.ts + it.durMs / 2) - tt) }
+            // Double on purpose: epoch milliseconds do not fit a Float's precision.
+            val span = (hi - lo).toDouble()
+            val tt = lo + (e.x - PL).toDouble() / (PR - PL) * span
+            val tol = dp(14f).toDouble() / (PR - PL) * span
+            // The column under the finger wins (its loudest event), so every drawn bar is tappable.
+            val bm = bucketMs(span.toLong())
+            val bs = tt.toLong() / bm * bm
+            val best = events.filter { it.ts < bs + bm && it.ts + it.durMs > bs }.maxByOrNull { it.peak }
+                ?: events.filter { tt >= it.ts - tol && tt <= it.ts + it.durMs + tol }
+                    .minByOrNull { kotlin.math.abs((it.ts + it.durMs / 2) - tt) }
             if (best != null) { selId = best.id; invalidate(); onPick(best) }
             return true
         }
@@ -247,8 +258,7 @@ class TimelineView(c: Context) : View(c) {
             p.color = pauseCap; cv.drawRoundRect(x, top, x + w, top + dp(4f), dp(2f), dp(2f), p)
         }
         // Fixed time buckets: height = share of the bucket spent snoring, colour = loudest peak in it.
-        val bSteps = longArrayOf(5_000L, 10_000L, 30_000L, 60_000L, 120_000L, 300_000L, 600_000L, 900_000L, 1800_000L)
-        val bm = bSteps.firstOrNull { span / it <= 48 } ?: bSteps.last()
+        val bm = bucketMs(span.toLong())
         val b0 = lo / bm * bm
         val n = ((hi - b0) / bm + 1).toInt()
         val sn = LongArray(n + 1); val pk = DoubleArray(n + 1)
