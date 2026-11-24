@@ -35,6 +35,11 @@ private val pauseColor get() = when {
     else -> 0x5500BCD4
 }
 
+private val pauseCap get() = when {
+    Look.contrast -> if (Look.night) 0xFF00E5FF.toInt() else 0xFF006064.toInt()
+    else -> 0xFF00BCD4.toInt()
+}
+
 class CalendarView(c: Context) : View(c) {
     var month: Calendar = Calendar.getInstance()
     var data: Map<Int, Double> = emptyMap()
@@ -140,6 +145,12 @@ class TimelineView(c: Context) : View(c) {
         return max(f.first, a - pad) to min(f.second, b + pad)
     }
 
+    /** Zooms to a moment, e.g. a suspected pause, with a few minutes of context around it. */
+    fun focus(ts: Long, durMs: Long) {
+        val mid = ts + durMs / 2
+        setView(mid - 3 * 60_000L, mid + 3 * 60_000L)
+    }
+
     private fun setView(lo0: Long, hi0: Long) {
         val (fl, fh) = full()
         val minSpan = 5 * 60_000L
@@ -209,38 +220,59 @@ class TimelineView(c: Context) : View(c) {
         val l = PL; val r = PR; val top = dp(8f); val bot = height - dp(22f)
         val span = (hi - lo).toFloat()
         val steps = longArrayOf(5 * 60_000L, 10 * 60_000L, 30 * 60_000L, hr, 2 * hr, 3 * hr)
-        val step = steps.firstOrNull { span / it <= 7 } ?: steps.last()
-        val fmt = if (step < hr) fmtHm else fmtH
+        val step = steps.firstOrNull { span / it <= 5 } ?: steps.last()
+        val fmt = fmtHm
+        // Tonal plot surface with rounded corners, as in Material 3 containers.
+        val plot = RectF(l, top, r, bot)
+        p.style = Paint.Style.FILL; p.color = withAlpha(on, if (Look.contrast) 0x22 else if (Look.oled) 0x14 else 0x0F)
+        cv.drawRoundRect(plot, dp(12f), dp(12f), p)
         p.textSize = dp(11f); p.textAlign = Paint.Align.CENTER; p.strokeWidth = 1f
+        val clip = Path().apply { addRoundRect(plot, dp(12f), dp(12f), Path.Direction.CW) }
+        cv.save(); cv.clipPath(clip)
+        // Level guides (-40 and -20 dBFS)
+        p.style = Paint.Style.STROKE; p.color = grid
+        for (db in doubleArrayOf(-40.0, -20.0)) {
+            val y = bot - ((db + 60) / 60).toFloat() * (bot - top)
+            cv.drawLine(l, y, r, y, p)
+        }
         var t = base + ((lo - base + step - 1) / step) * step
         while (t <= hi) {
             val x = l + (t - lo) / span * (r - l)
             p.style = Paint.Style.STROKE; p.color = grid; cv.drawLine(x, top, x, bot, p)
-            p.style = Paint.Style.FILL; p.color = sub; cv.drawText(fmt.format(Date(t)), x, height - dp(6f), p)
             t += step
         }
-        p.style = Paint.Style.STROKE; p.color = axis; cv.drawLine(l, bot, r, bot, p)
         p.style = Paint.Style.FILL
-        cv.save(); cv.clipRect(l, 0f, r, bot + 1f)
-        p.color = pauseColor
+        // Suspected pauses: a tinted band with a solid cap, so even a short one stays visible.
         for ((pt, pd) in pauses) {
             val x = l + (pt - lo) / span * (r - l)
-            cv.drawRect(x, top, x + max(dp(3f), (pd * 1000 / span).toFloat() * (r - l)), bot, p)
+            val w = max(dp(4f), (pd * 1000 / span).toFloat() * (r - l))
+            p.color = pauseColor; cv.drawRect(x, top, x + w, bot, p)
+            p.color = pauseCap; cv.drawRoundRect(x, top, x + w, top + dp(4f), dp(2f), dp(2f), p)
         }
         for (e in events) {
             if (e.ts + e.durMs < lo || e.ts > hi) continue
             val x = l + (e.ts - lo) / span * (r - l)
-            val w = max(dp(2f), e.durMs / span * (r - l))
+            val w = max(dp(3f), e.durMs / span * (r - l))
             val lvl = ((e.peak + 60) / 60).coerceIn(0.08, 1.0)
+            p.style = Paint.Style.FILL
             p.color = Night.heat(lvl, pri)
-            cv.drawRect(x, bot - lvl.toFloat() * (bot - top), x + w, bot, p)
+            val rad = min(dp(2f), w / 2)
+            cv.drawRoundRect(x, bot - lvl.toFloat() * (bot - top), x + w, bot + rad, rad, rad, p)
             if (e.id == selId) {
-                p.color = sub; p.style = Paint.Style.STROKE; p.strokeWidth = dp(1.5f)
-                cv.drawRect(x - dp(1f), top, x + w + dp(1f), bot, p)
+                p.color = on; p.style = Paint.Style.STROKE; p.strokeWidth = dp(1.5f)
+                cv.drawRoundRect(x - dp(1f), top + dp(1f), x + w + dp(1f), bot, rad, rad, p)
                 p.style = Paint.Style.FILL; p.strokeWidth = 1f
             }
         }
         cv.restore()
+        // Time labels under the plot
+        p.style = Paint.Style.FILL; p.color = sub; p.textAlign = Paint.Align.CENTER
+        t = base + ((lo - base + step - 1) / step) * step
+        while (t <= hi) {
+            val x = l + (t - lo) / span * (r - l)
+            cv.drawText(fmt.format(Date(t)), x.coerceIn(l + dp(16f), r - dp(16f)), height - dp(5f), p)
+            t += step
+        }
         if (events.isEmpty()) {
             p.color = sub; p.textSize = dp(14f)
             cv.drawText(L.t("No events"), width / 2f, height / 2f, p)

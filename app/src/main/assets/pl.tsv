@@ -274,3 +274,9 @@ High contrast	Wysoki kontrast
 Pure black or white background, bold outlines and maximum text contrast. Replaces dynamic colours.	Czysto czarne lub białe tło, grube obrysy i maksymalny kontrast tekstu. Zastępuje kolory dynamiczne.
 high contrast	wysoki kontrast
 Close player	Zamknij odtwarzacz
+Suspected pauses (>=10 s)	Podejrzane przerwy (>=10 s)
+Pauses	Przerwy
+Per hour	Na godzinę
+Longest	Najdłuższa
+Tap a time to zoom the timeline to it.	Dotknij godziny, aby przybliżyć na osi czasu.
+Redesigned suspected pauses (summary and tappable time chips that zoom the timeline) and a Material 3 style timeline chart.	Przeprojektowane podejrzane przerwy (podsumowanie i dotykalne godziny przybliżające oś czasu) oraz wykres osi czasu w stylu Material 3.

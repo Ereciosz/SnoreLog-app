@@ -3,6 +3,7 @@ package app.snorelog
 /** Newest first. Only the last 5 are shown. */
 object Changelog {
     val items = listOf(
+        "0.52" to "Redesigned suspected pauses (summary and tappable time chips that zoom the timeline) and a Material 3 style timeline chart.",
         "0.51.2" to "Score breakdown opens faster; the player can be closed with an x.",
         "0.51.1" to "Bugfix: Trends calendar no longer opens on an empty year; tapping a bar or a calendar day opens that night; double-tap on the timeline only zooms, a single tap plays.",
         "0.51" to "New OLED black theme and a High contrast option in Settings > Appearance.",

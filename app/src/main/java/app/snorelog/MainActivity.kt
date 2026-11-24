@@ -34,6 +34,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
+import android.widget.HorizontalScrollView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.color.MaterialColors
@@ -63,7 +64,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toggleBtn: MaterialButton
     private lateinit var navTitle: TextView
     private lateinit var statsTv: TextView
-    private lateinit var pauseTv: TextView
+    private lateinit var pauseBox: LinearLayout
+    private lateinit var pauseStats: LinearLayout
+    private lateinit var pauseChips: LinearLayout
+    private var pauseClr = 0
     private lateinit var newTv: TextView
     private lateinit var newCard: View
     private lateinit var loudBtn: MaterialButton
@@ -248,7 +252,15 @@ class MainActivity : AppCompatActivity() {
             addView(statsTv, LinearLayout.LayoutParams(0, WRAP, 1f).apply { marginStart = dp(16) })
         }
         tl = TimelineView(this).apply { onPick = { e -> load(e) } }
-        pauseTv = tv("", BODY, Color.parseColor(if (!Look.night) (if (Look.contrast) "#006064" else "#00838F") else "#26C6DA")).apply { setPadding(0, dp(8), 0, 0) }
+        pauseClr = Color.parseColor(if (!Look.night) (if (Look.contrast) "#006064" else "#00838F") else "#26C6DA")
+        pauseStats = LinearLayout(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        pauseChips = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
+        pauseBox = col(
+            tv(L.t("Suspected pauses (>=10 s)").uppercase(), LABEL, pauseClr).apply { setPadding(0, dp(16), 0, 0) },
+            pauseStats,
+            HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(pauseChips) },
+            tv("Tap a time to zoom the timeline to it.", LABEL, clr(M.attr.colorOnSurfaceVariant)).apply { setPadding(0, dp(4), 0, 0) }
+        ).apply { visibility = View.GONE }
         val selColor = clr(M.attr.colorSecondaryContainer)
         val chipGroup = ChipGroup(this)
         TAGS.forEach { t ->
@@ -297,7 +309,7 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) }
             addView(col(statusTitle, statusText).apply { setPadding(dp(16), dp(12), dp(16), dp(12)) })
         }
-        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseTv),
+        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
             card(sec("Tags for this night"), chipGroup), playerCard, card(evHead, list), rejCard)
 
         // ---- Trends page
@@ -823,11 +835,21 @@ class MainActivity : AppCompatActivity() {
         tl.pauses = np; tl.invalidate()
         if (np.isNotEmpty() || (st.apnea && hrs > 0)) {
             val idx = if (hrs > 0.1) "%.1f".format(np.size / hrs) else "-"
-            pauseTv.text = "Suspected pauses (>=10 s): ${np.size} ($idx/h)" +
-                (if (np.isEmpty()) "" else ", longest ${"%.0f".format(np.maxOf { it.second })} s\n" +
-                    np.take(10).joinToString(", ") { "${hmFmt.format(Date(it.first))} (${"%.0f".format(it.second)} s)" })
-            pauseTv.visibility = View.VISIBLE
-        } else pauseTv.visibility = View.GONE
+            pauseStats.removeAllViews(); pauseChips.removeAllViews()
+            fun stat(v: String, l: String) = pauseStats.addView(col(
+                tv(v, M.style.TextAppearance_Material3_HeadlineSmall, pauseClr),
+                tv(l, LABEL, clr(M.attr.colorOnSurfaceVariant))), LinearLayout.LayoutParams(0, WRAP, 1f))
+            stat("${np.size}", "Pauses")
+            if (np.isNotEmpty()) { stat(idx, "Per hour"); stat("${"%.0f".format(np.maxOf { it.second })} s", "Longest") }
+            np.forEach { (ts, d) ->
+                pauseChips.addView(Chip(this).apply {
+                    text = "${hmFmt.format(Date(ts))} \u00b7 ${"%.0f".format(d)} s"
+                    chipStrokeColor = ColorStateList.valueOf(pauseClr); chipStrokeWidth = dp(1).toFloat()
+                    setOnClickListener { tl.focus(ts, (d * 1000).toLong()) }
+                }, LinearLayout.LayoutParams(WRAP, WRAP).apply { marginEnd = dp(8) })
+            }
+            pauseBox.visibility = View.VISIBLE
+        } else pauseBox.visibility = View.GONE
 
         val curTags = tagsMap[selected] ?: emptySet()
         chips.forEach { (t, c) -> c.isChecked = t in curTags }
