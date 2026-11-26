@@ -74,8 +74,6 @@ Watchdog alert	Alert strażnika
 Every ~15 min checks that monitoring is alive. If the system killed it, you get a loud notification to arm again.	Co ok. 15 min sprawdza, czy nasłuch działa. Jeśli system go zabił, dostaniesz głośne powiadomienie, by włączyć go ponownie.
 Allow background activity	Zezwól na pracę w tle
 Open app battery settings	Otwórz ustawienia baterii aplikacji
-Allow display over other apps	Zezwól na wyświetlanie nad innymi aplikacjami
-Optional. Some phones then treat the app as more important and are less likely to stop it.	Opcjonalne. Niektóre telefony traktują wtedy aplikację jako ważniejszą i rzadziej ją zatrzymują.
 Bedside mode (screen stays on, black)	Tryb przy łóżku (ekran włączony, czarny)
 Optional, strongest protection: keeps the app visible all night with a black, dimmed screen. Uses a little battery on OLED. Long-press the screen to exit.	Opcjonalne, najsilniejsza ochrona: aplikacja widoczna całą noc na czarnym, przyciemnionym ekranie. Na OLED zużywa trochę baterii. Aby wyjść, przytrzymaj ekran.
 The persistent notification keeps the service in the foreground, but the phone's battery manager can still stop it. Set Battery to Unrestricted for this app. After a reboot, arm again.	Stałe powiadomienie utrzymuje usługę na pierwszym planie, ale menedżer baterii telefonu może ją nadal zatrzymać. Ustaw dla tej aplikacji baterię na „Bez ograniczeń”. Po ponownym uruchomieniu telefonu włącz nasłuch jeszcze raz.
@@ -98,7 +96,6 @@ Not a medical device	To nie jest wyrób medyczny
 Pause detection is not a medical device. It marks silences of 10-90 s between loud breathing. If you or a partner notice choking or gasping, or you are very sleepy by day, see a doctor.	Wykrywanie przerw nie jest wyrobem medycznym. Zaznacza ciszę trwającą 10-90 s między głośnymi oddechami. Jeśli Ty lub partner zauważycie dławienie się lub łapanie powietrza albo jesteś bardzo senny w dzień, zgłoś się do lekarza.
 Open-source components	Składniki open source
 Material Components for Android, AndroidX, TensorFlow Lite and the YAMNet audio model (Google) are used under the Apache License 2.0.	Material Components for Android, AndroidX, TensorFlow Lite i model dźwiękowy YAMNet (Google) są używane na licencji Apache 2.0.
-Off	Wyłączone
 Watchdog %s, bedside mode, battery settings	Strażnik: %s, tryb przy łóżku, ustawienia baterii
 %s theme, dynamic colours %s	Motyw: %s, kolory dynamiczne: %s
 Keep %d days, rejected clips %s	Przechowuj %d dni, odrzucone nagrania: %s
@@ -224,8 +221,7 @@ Would trigger	Wyzwoliłoby
 Trigger +%d dB, AI score %.2f	Próg +%d dB, wynik AI %.2f
 AI classifier: not in this build	Klasyfikator AI: brak w tej wersji
 Keep monitoring alive	Utrzymaj nasłuch przy życiu
-To record all night, Android must not stop SnoreLog in the background. Tap Allow, then in the app's battery settings (Settings > Reliability) choose Unrestricted. Without it the phone may end monitoring during the night.	Aby nagrywać całą noc, Android nie może zatrzymywać SnoreLog w tle. Dotknij Zezwól, a potem w ustawieniach baterii aplikacji (Ustawienia > Niezawodność) wybierz Bez ograniczeń. Bez tego telefon może przerwać nasłuch w nocy.
-Allow	Zezwól
+To record all night, Android must not stop SnoreLog in the background. Tap Open settings, then choose Battery > Unrestricted. Without it the phone may end monitoring during the night.	Aby nagrywać całą noc, Android nie może zatrzymywać SnoreLog w tle. Dotknij Otwórz ustawienia, a potem wybierz Bateria > Bez ograniczeń. Bez tego telefon może przerwać nasłuch w nocy.
 Don't remind me	Nie przypominaj
 What's new	Co nowego
 Made with Claude by Erecik ♥	Stworzone z Claude przez Erecika ♥
@@ -282,3 +278,6 @@ Timeline merges nearby events into snoring blocks; pause bands and the pause sum
 Timeline now shows fixed time buckets: bar height is the share of time spent snoring.	Oś czasu pokazuje teraz stałe przedziały czasu: wysokość słupka to udział czasu spędzonego na chrapaniu.
 Timeline bars are twice as fine and every bar can be tapped to play.	Paski na osi czasu są dwa razy drobniejsze i każdy można dotknąć, aby odtworzyć.
 Timeline bar height now shows loudness and rescales to the visible part when you zoom; opacity shows how much of the time was snoring.	Wysokość słupków na osi czasu pokazuje głośność i skaluje się do widocznego fragmentu przy przybliżaniu; krycie pokazuje, jak długo trwało chrapanie.
+Battery Saver is on (it may stop monitoring)	Oszczędzanie baterii jest włączone (może zatrzymać nasłuch)
+Open settings	Otwórz ustawienia
+Play-safe cleanup: removed the overlay and battery-dialog permissions, Android cloud backup is off, a Battery Saver warning, and unused code removed.	Porządki pod Google Play: usunięto uprawnienia do wyświetlania nad innymi aplikacjami i okna baterii, wyłączono kopię w chmurze Androida, dodano ostrzeżenie o oszczędzaniu baterii i usunięto nieużywany kod.

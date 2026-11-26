@@ -44,7 +44,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
-import kotlin.math.min
 import com.google.android.material.R as M
 
 class MainActivity : AppCompatActivity() {
@@ -423,8 +422,6 @@ class MainActivity : AppCompatActivity() {
                 button("Allow background activity", true) { requestIgnoreBattery() },
                 button("Open app battery settings", true) { openAppSettings() }),
                 card(
-                button("Allow display over other apps", true) { openOverlay() },
-                tv("Optional. Some phones then treat the app as more important and are less likely to stop it.", LABEL, sub),
                 button("Bedside mode (screen stays on, black)", true) { startActivity(Intent(this, BedsideActivity::class.java)) },
                 tv("Optional, strongest protection: keeps the app visible all night with a black, dimmed screen. Uses a little battery on OLED. Long-press the screen to exit.", LABEL, sub)),
                 card(tv("The persistent notification keeps the service in the foreground, but the phone's battery manager can still stop it. Set Battery to Unrestricted for this app. After a reboot, arm again.", LABEL, sub))),
@@ -582,8 +579,8 @@ class MainActivity : AppCompatActivity() {
     private fun batteryDialog(after: (() -> Unit)? = null) {
         com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
             .setTitle(L.t("Keep monitoring alive"))
-            .setMessage(L.t("To record all night, Android must not stop SnoreLog in the background. Tap Allow, then in the app's battery settings (Settings > Reliability) choose Unrestricted. Without it the phone may end monitoring during the night."))
-            .setPositiveButton(L.t("Allow")) { _, _ -> requestIgnoreBattery() }
+            .setMessage(L.t("To record all night, Android must not stop SnoreLog in the background. Tap Open settings, then choose Battery > Unrestricted. Without it the phone may end monitoring during the night."))
+            .setPositiveButton(L.t("Open settings")) { _, _ -> openAppSettings() }
             .setNeutralButton(L.t("Don't remind me")) { _, _ -> Settings(this).battNever = true }
             .setNegativeButton(L.t("Not now"), null)
             .setOnDismissListener { after?.invoke() }
@@ -737,24 +734,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---- battery
+    /** Opens the system list of battery-optimisation exemptions (no special permission needed). */
     private fun requestIgnoreBattery() {
-        try {
-            startActivity(Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
-        } catch (x: Exception) {
-            try { startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) } catch (y: Exception) { toast("Not available on this phone") }
-        }
+        try { startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+        catch (x: Exception) { toast("Not available on this phone") }
     }
 
     private fun openNotificationSettings() {
         try {
             Chan.create(this)
             startActivity(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName))
-        } catch (x: Exception) { toast("Not available on this phone") }
-    }
-
-    private fun openOverlay() {
-        try {
-            startActivity(Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         } catch (x: Exception) { toast("Not available on this phone") }
     }
 
@@ -776,8 +765,10 @@ class MainActivity : AppCompatActivity() {
         toggleBtn.text = if (run) "Disarm" else "Arm monitoring"
         toggleBtn.backgroundTintList = ColorStateList.valueOf(clr(if (run) M.attr.colorSecondaryContainer else M.attr.colorPrimary))
         toggleBtn.setTextColor(clr(if (run) M.attr.colorOnSecondaryContainer else M.attr.colorOnPrimary))
-        batteryTv.text = if (getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(packageName))
-            "Battery optimisation: off for this app (good)" else "Battery optimisation: on (the system may stop monitoring)"
+        val pm = getSystemService(PowerManager::class.java)
+        batteryTv.text = L.t(if (pm.isIgnoringBatteryOptimizations(packageName)) "Battery optimisation: off for this app (good)"
+            else "Battery optimisation: on (the system may stop monitoring)") +
+            (if (pm.isPowerSaveMode) "\n" + L.t("Battery Saver is on (it may stop monitoring)") else "")
 
         val db = Db(this)
         val all = db.all(); val tagsMap = db.allTags(); val pauseAll = db.pauses(); val sess = db.sessions(); val rejAll = db.rejected()

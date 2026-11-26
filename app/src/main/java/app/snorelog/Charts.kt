@@ -112,7 +112,6 @@ class TimelineView(c: Context) : View(c) {
     private var lastKey = -1
     private var showFull = false
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val fmtH = SimpleDateFormat("HH", Locale.getDefault())
     private val fmtHm = SimpleDateFormat("HH:mm", Locale.getDefault())
     private val PL get() = dp(6f)
     private val PR get() = width - dp(6f)
@@ -225,7 +224,7 @@ class TimelineView(c: Context) : View(c) {
 
     override fun onDraw(cv: Canvas) {
         val hr = 3600_000L
-        fmtH.timeZone = java.util.TimeZone.getDefault(); fmtHm.timeZone = java.util.TimeZone.getDefault()
+        fmtHm.timeZone = java.util.TimeZone.getDefault()
         val (lo, hi) = range()
         val base = Night.cal(key).timeInMillis
         val l = PL; val r = PR; val top = dp(8f); val bot = height - dp(22f)
