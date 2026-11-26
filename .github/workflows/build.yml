@@ -13,18 +13,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
-      - name: Download YAMNet model (optional)
-        continue-on-error: true
+      - name: Check the bundled AI model
         run: |
-          mkdir -p app/src/main/assets
+          # The model is stored in the repository. Fail the build if it is missing or damaged.
           M=app/src/main/assets/yamnet.tflite
-          get() { curl -fsSL --retry 2 -o "$2" "$1" && [ "$(stat -c%s "$2")" -gt 100000 ]; }
-          get "https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/android/lite-model_yamnet_classification_tflite_1.tflite" $M \
-            || get "https://tfhub.dev/google/lite-model/yamnet/classification/tflite/1?lite-format=tflite" $M \
-            || { curl -fsSL -o /tmp/y.tgz "https://www.kaggle.com/api/v1/models/google/yamnet/tfLite/classification-tflite/1/download" && mkdir -p /tmp/y && tar -xzf /tmp/y.tgz -C /tmp/y && cp "$(find /tmp/y -name '*.tflite' | head -1)" $M; } \
-            || { echo "MODEL DOWNLOAD FAILED"; rm -f $M; exit 1; }
-          curl -fsSL -o app/src/main/assets/yamnet_class_map.csv "https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv" || echo "class map download failed (default index will be used)"
-          ls -la app/src/main/assets
+          [ "$(stat -c%s $M)" -eq 4126810 ] || { echo "yamnet.tflite missing or wrong size"; exit 1; }
+          echo "10c95ea3eb9a7bb4cb8bddf6feb023250381008177ac162ce169694d05c317de  $M" | sha256sum -c -
+          [ -s app/src/main/assets/yamnet_class_map.csv ] || { echo "class map missing"; exit 1; }
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: "8.9" }
       - name: Signing key (optional)

@@ -47,21 +47,14 @@ Builds are currently debug-signed. Updates install over each other only if they 
 Requirements: JDK 17, Gradle 8.9, Android SDK 35.
 
 ```sh
-# 1. Download the YAMNet model and class map (required, not stored in the repo)
-mkdir -p app/src/main/assets
-curl -L -o app/src/main/assets/yamnet.tflite \
-  "https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/android/lite-model_yamnet_classification_tflite_1.tflite"
-curl -L -o app/src/main/assets/yamnet_class_map.csv \
-  "https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv"
-
-# 2. Build
+# The YAMNet model and class map are included in app/src/main/assets
 gradle assembleDebug
 # APK: app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The model is required for useful results: it is what separates snoring from other noise. A build without it still starts, but it then keeps every loud sound as an event, so scores and charts are meaningless.
+The YAMNet model (`yamnet.tflite`, Apache 2.0, from Google) is stored in the repository, so every build includes it. It is what separates snoring from other noise.
 
-The GitHub Actions workflow (`.github/workflows/build.yml`) does the same on every push. Pushing a tag such as `v0.47` also publishes a release with the APK attached.
+The GitHub Actions workflow (`.github/workflows/build.yml`) builds on every push and fails if the model is missing or altered. Pushing a tag such as `v0.47` also publishes a release with the APK attached.
 
 ## Project layout
 

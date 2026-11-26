@@ -4,7 +4,7 @@ SnoreLog itself is licensed under the GNU GPL v3.0 (see `LICENSE`). It uses the 
 
 | Component | Use | Licence |
 |---|---|---|
-| [YAMNet](https://www.kaggle.com/models/google/yamnet) (Google) | On-device audio classifier used to recognise snoring. The model file is downloaded during the build and is not stored in this repository. | Apache 2.0 |
+| [YAMNet](https://www.kaggle.com/models/google/yamnet) (Google) | On-device audio classifier used to recognise snoring. The model file (`yamnet.tflite`) and class map (`yamnet_class_map.csv`) are included unmodified in `app/src/main/assets`. | Apache 2.0 |
 | [TensorFlow Lite](https://www.tensorflow.org/lite) (Google) | Runs the YAMNet model | Apache 2.0 |
 | [AndroidX](https://developer.android.com/jetpack/androidx) (Google) | Core, AppCompat | Apache 2.0 |
 | [Material Components for Android](https://github.com/material-components/material-components-android) (Google) | User interface | Apache 2.0 |
