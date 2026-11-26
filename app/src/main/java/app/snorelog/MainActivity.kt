@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.GradientDrawable
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
@@ -57,7 +58,6 @@ class MainActivity : AppCompatActivity() {
     private val TAGS = listOf("Alcohol", "Congestion", "Late meal", "Back sleeping", "Stress/tired")
     private val THEMES = listOf("System", "Light", "Dark", "OLED")
     private val ACCENTS = listOf("Orange", "Teal", "Violet", "Green")
-    private val chips = LinkedHashMap<String, Chip>()
     private val pages = ArrayList<View>()
 
     private lateinit var toolbar: MaterialToolbar
@@ -73,10 +73,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var newTv: TextView
     private lateinit var newCard: View
     private lateinit var loudBtn: MaterialButton
-    private lateinit var tagsBtn: MaterialButton
-    private lateinit var tagsBox: LinearLayout
-    private var tagsOpen = false
+    private lateinit var tagBtn: MaterialButton
     private var tagsNow: Set<String> = emptySet()
+    private var rippleRes = 0
     private var loudClip: Ev? = null
     private lateinit var monthLabel: TextView
     private lateinit var insights: TextView
@@ -239,10 +238,17 @@ class MainActivity : AppCompatActivity() {
             addView(button("\u2715", true) { newCard.visibility = View.GONE }.apply { minWidth = 0; minimumWidth = 0 })
         }).apply { visibility = View.GONE }
         navTitle = tv("", TITLE).apply { gravity = Gravity.CENTER }
+        tagBtn = MaterialButton(this, null, M.attr.materialButtonOutlinedStyle).apply {
+            setIconResource(R.drawable.ic_tag); iconPadding = 0; minWidth = 0; minimumWidth = 0
+            setPadding(dp(14), paddingTop, dp(14), paddingBottom)
+            contentDescription = L.t("Tags for this night")
+            setOnClickListener { tagsDialog() }
+        }
         val nav = LinearLayout(this).apply {
             gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(12), 0, 0)
             addView(button("<", true) { shift(-1) })
             addView(navTitle, LinearLayout.LayoutParams(0, WRAP, 1f))
+            addView(tagBtn, LinearLayout.LayoutParams(WRAP, WRAP).apply { marginEnd = dp(8) })
             addView(button(">", true) { shift(1) })
         }
         ring = ScoreRing(this)
@@ -268,17 +274,6 @@ class MainActivity : AppCompatActivity() {
             tv("Tap a time to zoom the timeline to it.", LABEL, clr(M.attr.colorOnSurfaceVariant)).apply { setPadding(0, dp(4), 0, 0) }
         ).apply { visibility = View.GONE }
         val selColor = clr(M.attr.colorSecondaryContainer)
-        val chipGroup = ChipGroup(this)
-        TAGS.forEach { t ->
-            val chip = Chip(this).apply {
-                text = t; isCheckable = true
-                chipBackgroundColor = ColorStateList(
-                    arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
-                    intArrayOf(selColor, Color.TRANSPARENT))
-                setOnClickListener { toggleTag(t) }
-            }
-            chips[t] = chip; chipGroup.addView(chip)
-        }
         playerTitle = tv("", TITLE)
         infoTv = tv("", LABEL, sub).apply { setPadding(0, dp(4), 0, dp(8)) }
         level = LevelView(this).apply { onSeek = { f -> player?.let { mp -> mp.seekTo((f * mp.duration).toInt()); cursor = f; invalidate() } } }
@@ -315,9 +310,7 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) }
             addView(col(statusTitle, statusText).apply { setPadding(dp(16), dp(12), dp(16), dp(12)) })
         }
-        tagsBox = col(chipGroup).apply { visibility = View.GONE; setPadding(0, dp(4), 0, 0) }
-        tagsBtn = button("", true) { tagsOpen = !tagsOpen; updateTagsBtn() }
-        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn, tagsBtn, tagsBox), card(sec("Timeline"), tl, tv("Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
+        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
             playerCard, card(evHead, list), rejCard)
 
         // ---- Trends page
@@ -644,10 +637,13 @@ class MainActivity : AppCompatActivity() {
         if (k <= Night.key(System.currentTimeMillis())) { selected = k; cal.month = Night.cal(k); refresh() }
     }
 
-    private fun updateTagsBtn() {
-        val names = TAGS.filter { it in tagsNow }.joinToString(" \u00b7 ") { L.t(it) }
-        tagsBtn.text = (if (names.isEmpty()) L.t("Add tags") else L.t("Tags") + ": " + names) + "   " + (if (tagsOpen) "\u25B4" else "\u25BE")
-        tagsBox.visibility = if (tagsOpen) View.VISIBLE else View.GONE
+    private fun tagsDialog() {
+        val on = BooleanArray(TAGS.size) { TAGS[it] in tagsNow }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(L.t("Tags for this night"))
+            .setMultiChoiceItems(TAGS.map { L.t(it) }.toTypedArray(), on) { _, i, _ -> toggleTag(TAGS[i]) }
+            .setPositiveButton(L.t("Done"), null)
+            .show()
     }
 
     private fun toggleTag(t: String) {
@@ -696,7 +692,23 @@ class MainActivity : AppCompatActivity() {
         mp.start(); playBtn.text = "Pause"
         // Show the list the clip belongs to, so the playing clip can be found in it.
         if (e.rej) { if (!rejOpen) { rejOpen = true; heads() } } else if (!evOpen) { evOpen = true; heads() }
+        markPlaying()
         if (follow) scrollToEvent(e)
+    }
+
+    /** Highlights the row of the clip that is loaded in the player (the single clip if shown, otherwise its merged group). */
+    private fun markPlaying() {
+        val id = current?.id
+        fun scan(parent: ViewGroup) {
+            val rows = (0 until parent.childCount).map { parent.getChildAt(it) }.filter { it.tag is Set<*> }
+            val exact = if (id == null) null else rows.firstOrNull { val t = it.tag as Set<*>; t.size == 1 && t.any { x -> x == id } }
+            for (r in rows) {
+                val hl = id != null && (if (exact != null) r === exact else (r.tag as Set<*>).any { it == id })
+                if (hl) r.background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(clr(M.attr.colorSecondaryContainer)) }
+                else if (rippleRes != 0) r.setBackgroundResource(rippleRes)
+            }
+        }
+        scan(list); scan(rejList)
     }
 
     private fun findRow(parent: ViewGroup, id: Long): View? {
@@ -756,6 +768,7 @@ class MainActivity : AppCompatActivity() {
         playBtn.text = "Play"; seek.value = 0f
         tl.selId = -1L; tl.invalidate()
         playerCard.visibility = View.GONE; miniBar.visibility = View.GONE
+        markPlaying()
     }
 
     private fun togglePlay() {
@@ -907,8 +920,9 @@ class MainActivity : AppCompatActivity() {
         } else pauseBox.visibility = View.GONE
 
         val curTags = tagsMap[selected] ?: emptySet()
-        chips.forEach { (t, c) -> c.isChecked = t in curTags }
-        tagsNow = curTags; updateTagsBtn()
+        tagsNow = curTags
+        tagBtn.text = if (curTags.isEmpty()) "" else curTags.size.toString()
+        tagBtn.iconPadding = if (curTags.isEmpty()) 0 else dp(6)
         val known = byNight.keys + tagsMap.keys
         insights.text = TAGS.joinToString("\n") { t ->
             val w = known.filter { t in (tagsMap[it] ?: emptySet()) }.map { mins[it] ?: 0.0 }
@@ -921,6 +935,7 @@ class MainActivity : AppCompatActivity() {
         if (ev.isEmpty()) list.addView(tv("-", BODY))
         val ripple = TypedValue()
         theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
+        rippleRes = ripple.resourceId
         val sub = clr(M.attr.colorOnSurfaceVariant)
         val groups = ArrayList<ArrayList<Ev>>()
         for (e in ev.sortedBy { it.ts }) {
@@ -972,6 +987,7 @@ class MainActivity : AppCompatActivity() {
             }
             rejList.addView(row)
         }
+        markPlaying()
         val fn = rejAll.count { Night.key(it.ts) == selected && it.reason.startsWith("fart") }
         if (fn > 0 || Settings(this).fart) statsTv.text = statsTv.text.toString() + "\nFarts: $fn"
         heads()
