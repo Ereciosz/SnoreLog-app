@@ -172,6 +172,10 @@ class Settings(c: Context) {
         get() = p.getBoolean("trs", false)
         set(v) { p.edit().putBoolean("trs", v).apply() }
 
+    var statsDays: Int // Stats tab period: 7, 30, 90 days, 0 = everything that is kept
+        get() = p.getInt("sd", 30)
+        set(v) { p.edit().putInt("sd", v).apply() }
+
     var dynamic: Boolean
         get() = p.getBoolean("dy", true)
         set(v) { p.edit().putBoolean("dy", v).apply() }

@@ -2,12 +2,14 @@ package app.snorelog
 
 import android.Manifest
 import android.content.ContentValues
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
@@ -74,11 +76,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var newCard: View
     private lateinit var loudBtn: MaterialButton
     private lateinit var tagBtn: MaterialButton
+    private lateinit var soundTv: TextView
     private var tagsNow: Set<String> = emptySet()
     private var rippleRes = 0
     private var loudClip: Ev? = null
     private lateinit var monthLabel: TextView
-    private lateinit var insights: TextView
+    private lateinit var statsBox: LinearLayout
+    private var statsSig = ""
     private lateinit var batteryTv: TextView
     private lateinit var bannerCard: MaterialCardView
     private lateinit var statusCard: MaterialCardView
@@ -326,7 +330,6 @@ class MainActivity : AppCompatActivity() {
             addView(monthLabel, LinearLayout.LayoutParams(0, WRAP, 1f))
             addView(button(">", true) { cal.month.add(Calendar.MONTH, 1); refresh() })
         }
-        insights = tv("", BODY).apply { setLineSpacing(0f, 1.3f) }
         trendTitle = sec("Last 14 nights - minutes of snoring")
         val metricGroup = ChipGroup(this).apply { isSingleSelection = true; isSelectionRequired = true }
         listOf("Snoring min" to false, "Sleep score" to true).forEach { (label, isScore) ->
@@ -339,7 +342,21 @@ class MainActivity : AppCompatActivity() {
             })
         }
         val trendsPage = col(card(trendTitle, metricGroup, bars),
-            card(sec("Calendar"), monthNav, cal), card(sec("Tag insights"), insights))
+            card(sec("Calendar"), monthNav, cal))
+
+        // ---- Stats page (the cards are rebuilt by fillStats when the data or the period changes)
+        statsBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val rangeGroup = ChipGroup(this).apply { isSingleSelection = true; isSelectionRequired = true }
+        listOf("7 days" to 7, "30 days" to 30, "90 days" to 90, "All" to 0).forEach { (label, d) ->
+            rangeGroup.addView(Chip(this).apply {
+                text = label; isCheckable = true; isChecked = st.statsDays == d
+                chipBackgroundColor = ColorStateList(
+                    arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+                    intArrayOf(selColor, Color.TRANSPARENT))
+                setOnClickListener { st.statsDays = d; refresh() }
+            })
+        }
+        val statsPage = col(card(sec("Period"), rangeGroup), statsBox)
 
         // ---- Settings page
         val marginLabel = tv("", BODY)
@@ -369,6 +386,7 @@ class MainActivity : AppCompatActivity() {
             (try { assets.open("yamnet.tflite").close(); "AI classifier model: included" } catch (e: Exception) { "AI classifier model: not in this build" })
         val modelStatus = try { assets.open("yamnet.tflite").close(); "Model: included in this build." } catch (e: Exception) { "Model: not in this build (filter is skipped)." }
         batteryTv = tv("", LABEL, sub).apply { setPadding(0, dp(8), 0, dp(8)) }
+        soundTv = tv("", BODY).apply { setPadding(0, 0, 0, dp(4)) }
         storageTv = tv("", BODY).apply { setPadding(0, 0, 0, dp(8)) }
         val boostLabel = tv("", BODY)
         fun bText(v: Int) { boostLabel.text = "Playback boost: +$v dB" }
@@ -410,6 +428,11 @@ class MainActivity : AppCompatActivity() {
                         floorLabel, slider(10f, 60f, st.batteryFloor) { st.batteryFloor = it; fText(it) }),
                     tv("Battery mode keeps recording after an unplug until the battery floor.", LABEL, sub)))),
             page(card(
+                tv("Phone sounds", TITLE),
+                soundTv,
+                tv("Notification sounds and vibration can be recorded as snoring. While monitoring, put the phone on silent or use Do Not Disturb or your phone's bedtime mode. Alarms normally still ring, but check that yours is allowed.", LABEL, sub),
+                button("Open sound settings", true) { openSoundSettings() }),
+                card(
                 button("Test mode (live meter)", true) { startActivity(Intent(this, LiveActivity::class.java)) },
                 tv("Shows loudness, trigger level and AI score live, so you can tune sensitivity by day.", LABEL, sub),
                 aiLabel.apply { setPadding(0, dp(12), 0, 0) }, slider(5f, 90f, st.aiPct) { st.aiPct = it; iText(it) },
@@ -507,8 +530,8 @@ class MainActivity : AppCompatActivity() {
         this.subPages = subPages; this.subTitles = subTitles
         val settingsPage = col(settingsHome, *subPages.toTypedArray())
 
-        pages.addAll(listOf(nightPage, trendsPage, settingsPage))
-        val content = col(nightPage, trendsPage, settingsPage).apply { setPadding(dp(16), dp(4), dp(16), dp(16)) }
+        pages.addAll(listOf(nightPage, trendsPage, settingsPage, statsPage))
+        val content = col(nightPage, trendsPage, settingsPage, statsPage).apply { setPadding(dp(16), dp(4), dp(16), dp(16)) }
         val scroll = ScrollView(this).apply { addView(content); isVerticalScrollBarEnabled = false }.also { pageScroll = it }
 
         toggleBtn = button("Arm monitoring") { onToggle() }.apply { minHeight = dp(56); cornerRadius = dp(28) }
@@ -526,6 +549,7 @@ class MainActivity : AppCompatActivity() {
         bottomNav = BottomNavigationView(this).apply {
             menu.add(Menu.NONE, 0, Menu.NONE, L.t("Night")).setIcon(R.drawable.ic_night)
             menu.add(Menu.NONE, 1, Menu.NONE, L.t("Trends")).setIcon(R.drawable.ic_trends)
+            menu.add(Menu.NONE, 3, Menu.NONE, L.t("Stats")).setIcon(R.drawable.ic_stats)
             menu.add(Menu.NONE, 2, Menu.NONE, L.t("Settings")).setIcon(R.drawable.ic_settings)
             setOnItemSelectedListener { showTab(it.itemId); true }
         }
@@ -813,10 +837,169 @@ class MainActivity : AppCompatActivity() {
         } catch (x: Exception) { toast("Not available on this phone") }
     }
 
+    private fun openSoundSettings() {
+        try { startActivity(Intent(android.provider.Settings.ACTION_SOUND_SETTINGS)) } catch (x: Exception) { toast("Not available on this phone") }
+    }
+
     private fun openAppSettings() {
         try {
             startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
         } catch (x: Exception) { toast("Not available on this phone") }
+    }
+
+    /** Stats tab: averages, donuts and distributions over the chosen period. Rebuilt only when the data or the period changed. */
+    private fun fillStats(st: Settings, byNight: Map<Int, List<Ev>>, sessMin: Map<Int, Double>, tagsMap: Map<Int, Set<String>>, pauses: List<Pair<Long, Double>>) {
+        val todayKey = Night.key(System.currentTimeMillis())
+        val sig = listOf(byNight.values.sumOf { it.size }, sessMin.size, sessMin.values.sum().toLong(), tagsMap.hashCode(),
+            pauses.size, st.statsDays, st.apnea, todayKey, Look.night, Look.contrast, Look.oled).joinToString("|")
+        if (sig == statsSig) return
+        statsSig = sig
+        statsBox.removeAllViews()
+
+        val sub = clr(M.attr.colorOnSurfaceVariant)
+        val ripple = TypedValue()
+        theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
+        fun cap(t: String) = tv(t, LABEL, sub).apply { setPadding(0, 0, 0, dp(8)) }
+        fun tile(v: String, l: String, extra: String = "", onClick: (() -> Unit)? = null): View {
+            val t = col(tv(v, M.style.TextAppearance_Material3_HeadlineSmall), tv(l, LABEL, sub))
+            if (extra.isNotEmpty()) t.addView(tv(extra, LABEL, sub))
+            if (onClick != null) { t.isClickable = true; t.setBackgroundResource(ripple.resourceId); t.setOnClickListener { onClick() } }
+            return t
+        }
+        fun tiles(vararg v: View) = LinearLayout(this).apply {
+            setPadding(0, dp(6), 0, dp(6))
+            v.forEach { addView(it, LinearLayout.LayoutParams(0, WRAP, 1f)) }
+        }
+        fun goNight(k: Int) { selected = k; cal.month = Night.cal(k); bottomNav.selectedItemId = 0 }
+        val dFmt = SimpleDateFormat("d MMM", L.locale())
+        fun dayOf(k: Int) = dFmt.format(Night.cal(k).time)
+
+        // Nights inside the period (a night counts when it has events or at least 30 min of recording, like the Trends score).
+        val today = Night.cal(todayKey)
+        fun keyAgo(d: Int): Int { val c = today.clone() as Calendar; c.add(Calendar.DAY_OF_MONTH, -d); return Night.keyOf(c) }
+        val days = st.statsDays
+        val from = if (days > 0) keyAgo(days - 1) else 0
+        val prevFrom = if (days > 0) keyAgo(2 * days - 1) else 0
+        class N(val k: Int, val r: Score.Result, val evs: List<Ev>)
+        fun night(k: Int): N? {
+            val evs = byNight[k] ?: emptyList()
+            val sm = sessMin[k] ?: 0.0
+            return if (evs.isEmpty() && sm < 30.0) null else N(k, Score.calc(evs, sm), evs)
+        }
+        val allKeys = (byNight.keys + sessMin.keys).toSortedSet()
+        val nights = allKeys.filter { it >= from }.mapNotNull { night(it) }
+        if (nights.isEmpty()) {
+            statsBox.addView(card(tv("Not enough data yet. Stats appear after the first recorded night.", BODY, sub)))
+            L.walk(statsBox); return
+        }
+
+        val evAll = nights.flatMap { it.evs }
+        val avgScore = nights.map { it.r.score }.average()
+        val avgMin = nights.map { it.r.snoreMin }.average()
+        val best = nights.maxByOrNull { it.r.score }!!
+        val worst = nights.minByOrNull { it.r.score }!!
+        val prev = if (days > 0) allKeys.filter { it in prevFrom until from }.mapNotNull { night(it) } else emptyList()
+        val delta = if (prev.isNotEmpty()) avgScore - prev.map { it.r.score }.average() else null
+        val recH = nights.sumOf { it.r.recMin } / 60.0
+
+        statsBox.addView(card(sec("Overview"),
+            tiles(tile("%.0f".format(Locale.US, avgScore), "Avg score", if (delta != null) "%+.0f vs previous period".format(Locale.US, delta) else ""),
+                tile("%.1f".format(Locale.US, avgMin), "Snoring min / night"),
+                tile("${nights.size}", "Nights")),
+            tiles(tile("${best.r.score}", "Best night", dayOf(best.k)) { goNight(best.k) },
+                tile("${worst.r.score}", "Worst night", dayOf(worst.k)) { goNight(worst.k) },
+                tile("${evAll.size}", "Events")),
+            tiles(tile(if (evAll.isEmpty()) "-" else "%.0f s".format(Locale.US, evAll.maxOf { it.durMs } / 1000.0), "Longest event"),
+                tile(if (evAll.isEmpty()) "-" else "%.0f dBFS".format(Locale.US, evAll.maxOf { it.peak }), "Loudest"),
+                tile("%.0f h".format(Locale.US, recH), "Recorded"))))
+
+        // Share of recorded time spent snoring
+        val totSnore = nights.sumOf { it.r.snoreMin }
+        val totRec = nights.sumOf { it.r.recMin }
+        val sharePct = if (totRec > 0) (100.0 * totSnore / totRec).coerceIn(0.0, 100.0) else 0.0
+        val shareDonut = DonutView(this).apply {
+            slices = listOf(
+                DonutView.Slice(L.t("Snoring"), sharePct, clr(M.attr.colorPrimary), "%.1f%%".format(Locale.US, sharePct)),
+                DonutView.Slice(L.t("Quiet"), 100.0 - sharePct, clr(M.attr.colorOutline), "%.1f%%".format(Locale.US, 100.0 - sharePct)))
+            center = "%.1f%%".format(Locale.US, sharePct); centerSub = L.t("snoring")
+        }
+        statsBox.addView(card(sec("Share of recorded time"), shareDonut))
+
+        // Nights by score band (same limits as the score ring)
+        val nGood = nights.count { it.r.score >= 70 }
+        val nMid = nights.count { it.r.score in 40..69 }
+        val nBad = nights.size - nGood - nMid
+        val bandDonut = DonutView(this).apply {
+            slices = listOf(
+                DonutView.Slice(L.t("Good (70+)"), nGood.toDouble(), Pal.good, "$nGood"),
+                DonutView.Slice(L.t("Medium (40-69)"), nMid.toDouble(), Pal.mid, "$nMid"),
+                DonutView.Slice(L.t("Poor (<40)"), nBad.toDouble(), Pal.bad, "$nBad"))
+            center = "${nights.size}"; centerSub = L.t("nights")
+        }
+        statsBox.addView(card(sec("Nights by score"), bandDonut))
+
+        // Snoring by clock hour (18:00 ... 11:59), average minutes per night
+        val hc = Calendar.getInstance()
+        val perHour = DoubleArray(18)
+        for (e in evAll) {
+            hc.timeInMillis = e.ts
+            val hr = hc.get(Calendar.HOUR_OF_DAY)
+            perHour[if (hr >= 18) hr - 18 else if (hr <= 11) hr + 6 else 0] += e.durMs / 60000.0
+        }
+        val hourChart = ColumnsView(this).apply {
+            labels = (0 until 18).map { ((it + 18) % 24).toString() }
+            values = perHour.map { it / nights.size }
+            labelEvery = 2; showValues = false
+            valueFmt = { "%.1f".format(Locale.US, it) }
+        }
+        statsBox.addView(card(sec("Through the night"), cap("Average minutes of snoring in each hour of the night"), hourChart))
+
+        // Average score by weekday (the weekday the night started)
+        val wSum = DoubleArray(8); val wCnt = IntArray(8)
+        nights.forEach { n -> val d = Night.cal(n.k).get(Calendar.DAY_OF_WEEK); wSum[d] += n.r.score.toDouble(); wCnt[d]++ }
+        val order = listOf(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY)
+        val wk = java.text.DateFormatSymbols(L.locale()).shortWeekdays
+        val weekChart = ColumnsView(this).apply {
+            labels = order.map { wk[it].trimEnd('.').take(3) }
+            values = order.map { if (wCnt[it] > 0) wSum[it] / wCnt[it] else 0.0 }
+            fixedMax = 100.0
+        }
+        statsBox.addView(card(sec("By weekday"), cap("Average sleep score by the weekday the night started"), weekChart))
+
+        // Loudness distribution
+        val edges = doubleArrayOf(-40.0, -30.0, -20.0, -10.0)
+        val lc = DoubleArray(5)
+        for (e in evAll) { var i = 0; while (i < 4 && e.peak >= edges[i]) i++; lc[i] += 1.0 }
+        val loudChart = ColumnsView(this).apply {
+            labels = listOf("<-40", "-40..-30", "-30..-20", "-20..-10", ">-10")
+            values = lc.toList()
+        }
+        statsBox.addView(card(sec("Loudness"), cap("Number of events by peak loudness (dBFS)"), loudChart))
+
+        // Tags against the sleep score
+        val tagRows = TAGS.map { t ->
+            val w = nights.filter { t in (tagsMap[it.k] ?: emptySet()) }
+            val wo = nights.filter { t !in (tagsMap[it.k] ?: emptySet()) }
+            if (w.size < 2 || wo.size < 2) TagCompareView.Row(L.t(t), "", null, null, L.t("need more nights (${w.size} with / ${wo.size} without)"))
+            else TagCompareView.Row(L.t(t), "%.1f vs %.1f min".format(Locale.US, w.map { it.r.snoreMin }.average(), wo.map { it.r.snoreMin }.average()),
+                w.map { it.r.score }.average(), wo.map { it.r.score }.average(), "")
+        }
+        val tagChart = TagCompareView(this).apply { rows = tagRows }
+        statsBox.addView(card(sec("Tags and sleep score"),
+            cap("Average sleep score on nights with the tag (top bar) and without it (bottom bar). On the right: snoring minutes per night, with vs without."), tagChart))
+
+        // Suspected pauses (only when the experimental detection is on)
+        if (st.apnea) {
+            val keys = nights.map { it.k }.toSet()
+            val pn = pauses.filter { Night.key(it.first) in keys }
+            val hrs = nights.sumOf { sessMin[it.k] ?: 0.0 } / 60.0
+            statsBox.addView(card(sec("Suspected pauses"),
+                tiles(tile("${pn.size}", "Pauses"),
+                    tile(if (hrs > 0.1) "%.1f".format(Locale.US, pn.size / hrs) else "-", "Per hour"),
+                    tile(if (pn.isEmpty()) "-" else "%.0f s".format(Locale.US, pn.maxOf { it.second }), "Longest")),
+                cap("Experimental. Not a medical device.")))
+        }
+        L.walk(statsBox)
     }
 
     private fun refresh() {
@@ -831,6 +1014,11 @@ class MainActivity : AppCompatActivity() {
         toggleBtn.text = if (run) "Disarm" else "Arm monitoring"
         toggleBtn.backgroundTintList = ColorStateList.valueOf(clr(if (run) M.attr.colorSecondaryContainer else M.attr.colorPrimary))
         toggleBtn.setTextColor(clr(if (run) M.attr.colorOnSecondaryContainer else M.attr.colorOnPrimary))
+        val quiet = getSystemService(NotificationManager::class.java).currentInterruptionFilter.let {
+            it == NotificationManager.INTERRUPTION_FILTER_PRIORITY || it == NotificationManager.INTERRUPTION_FILTER_NONE || it == NotificationManager.INTERRUPTION_FILTER_ALARMS
+        } || getSystemService(AudioManager::class.java).ringerMode == AudioManager.RINGER_MODE_SILENT
+        soundTv.text = L.t(if (quiet) "Silent or Do Not Disturb: good" else "Sounds or vibration are on: they may be recorded as snoring")
+        soundTv.setTextColor(clr(if (quiet) M.attr.colorOnSurface else M.attr.colorError))
         val pm = getSystemService(PowerManager::class.java)
         batteryTv.text = L.t(if (pm.isIgnoringBatteryOptimizations(packageName)) "Battery optimisation: off for this app (good)"
             else "Battery optimisation: on (the system may stop monitoring)") +
@@ -870,9 +1058,9 @@ class MainActivity : AppCompatActivity() {
             val k = Night.keyOf(c); k to (trend[k] ?: 0.0)
         }
         bars.selected = selected; bars.invalidate()
+        if (tab == 3) fillStats(st, byNight, sessMin, tagsMap, pauseAll)
 
-        navTitle.text = SimpleDateFormat("EEE d MMM", L.locale()).format(Night.cal(selected).time) +
-            (if (selected == Night.keyOf(today)) "  (latest)" else "")
+        navTitle.text = SimpleDateFormat("EEE d MMM", L.locale()).format(Night.cal(selected).time)
         val ev = (byNight[selected] ?: emptyList()).sortedBy { it.ts }
         tl.events = ev; tl.key = selected
 
@@ -923,14 +1111,6 @@ class MainActivity : AppCompatActivity() {
         tagsNow = curTags
         tagBtn.text = if (curTags.isEmpty()) "" else curTags.size.toString()
         tagBtn.iconPadding = if (curTags.isEmpty()) 0 else dp(6)
-        val known = byNight.keys + tagsMap.keys
-        insights.text = TAGS.joinToString("\n") { t ->
-            val w = known.filter { t in (tagsMap[it] ?: emptySet()) }.map { mins[it] ?: 0.0 }
-            val wo = known.filter { t !in (tagsMap[it] ?: emptySet()) }.map { mins[it] ?: 0.0 }
-            if (w.size < 2 || wo.size < 2) "${L.t(t)}: need more nights (${w.size} with / ${wo.size} without)"
-            else "${L.t(t)}: ${"%.1f".format(w.average())} min with vs ${"%.1f".format(wo.average())} min without"
-        }
-
         list.removeAllViews()
         if (ev.isEmpty()) list.addView(tv("-", BODY))
         val ripple = TypedValue()

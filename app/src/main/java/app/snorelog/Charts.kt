@@ -443,3 +443,146 @@ class LevelView(c: Context) : View(c) {
         return true
     }
 }
+
+/** Score colours shared by the Stats charts (same as the score ring, with dark ink in light high contrast). */
+object Pal {
+    private val darkInk get() = Look.contrast && !Look.night
+    val good get() = if (darkInk) 0xFF1B5E20.toInt() else 0xFF66BB6A.toInt()
+    val mid get() = if (darkInk) 0xFF8A5A00.toInt() else 0xFFFFB300.toInt()
+    val bad get() = if (darkInk) 0xFFBF360C.toInt() else 0xFFFF7043.toInt()
+}
+
+/** Donut chart with the legend on the right. Texts must already be translated. */
+class DonutView(c: Context) : View(c) {
+    class Slice(val label: String, val value: Double, val color: Int, val text: String)
+    var slices: List<Slice> = emptyList()
+    var center = ""
+    var centerSub = ""
+    private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    override fun onMeasure(w: Int, h: Int) = setMeasuredDimension(MeasureSpec.getSize(w), dp(124f).toInt())
+
+    override fun onDraw(cv: Canvas) {
+        val size = dp(112f)
+        val sw = dp(14f)
+        val top = (height - size) / 2f
+        val pad = sw / 2f + dp(2f)
+        val rect = RectF(pad, top + pad, size - pad, top + size - pad)
+        p.style = Paint.Style.STROKE; p.strokeWidth = sw; p.strokeCap = Paint.Cap.BUTT
+        p.color = grid
+        cv.drawArc(rect, -90f, 360f, false, p)
+        val total = slices.sumOf { max(it.value, 0.0) }
+        if (total > 0) {
+            val gap = if (slices.count { it.value > 0 } > 1) 2f else 0f
+            var start = -90f
+            for (s in slices) {
+                if (s.value <= 0) continue
+                val sweep = (360.0 * s.value / total).toFloat()
+                p.color = s.color
+                cv.drawArc(rect, start + gap / 2f, max(sweep - gap, 0.5f), false, p)
+                start += sweep
+            }
+        }
+        p.style = Paint.Style.FILL; p.textAlign = Paint.Align.CENTER
+        p.color = on; p.typeface = Typeface.DEFAULT_BOLD; p.textSize = dp(22f)
+        cv.drawText(center, size / 2f, top + size / 2f + dp(2f), p)
+        p.color = sub; p.typeface = Typeface.DEFAULT; p.textSize = dp(11f)
+        cv.drawText(centerSub, size / 2f, top + size / 2f + dp(18f), p)
+
+        val row = dp(28f)
+        val x0 = size + dp(20f)
+        var y = (height - row * slices.size) / 2f
+        for (s in slices) {
+            p.style = Paint.Style.FILL; p.color = s.color
+            cv.drawRoundRect(x0, y + dp(7f), x0 + dp(12f), y + dp(19f), dp(3f), dp(3f), p)
+            p.textSize = dp(13f)
+            p.textAlign = Paint.Align.LEFT; p.color = on
+            cv.drawText(s.label, x0 + dp(20f), y + dp(18f), p)
+            p.textAlign = Paint.Align.RIGHT; p.color = sub
+            cv.drawText(s.text, width - dp(2f), y + dp(18f), p)
+            y += row
+        }
+    }
+}
+
+/** Simple column chart. Value labels are shown on every column, or only on the tallest one. */
+class ColumnsView(c: Context) : View(c) {
+    var labels: List<String> = emptyList()
+    var values: List<Double> = emptyList()
+    var fixedMax = 0.0            // > 0: scale 0..fixedMax
+    var showValues = true         // false: only the tallest column gets a value
+    var labelEvery = 1
+    var valueFmt: (Double) -> String = { "%.0f".format(Locale.US, it) }
+    private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    override fun onMeasure(w: Int, h: Int) = setMeasuredDimension(MeasureSpec.getSize(w), dp(140f).toInt())
+
+    override fun onDraw(cv: Canvas) {
+        val n = values.size
+        if (n == 0 || labels.size != n) return
+        val mx = if (fixedMax > 0) fixedMax else max(values.maxOrNull() ?: 0.0, 1e-9)
+        val slot = width / n.toFloat()
+        val bot = height - dp(18f)
+        val maxH = bot - dp(18f)
+        val topIdx = values.indices.maxByOrNull { values[it] } ?: -1
+        p.style = Paint.Style.STROKE; p.strokeWidth = dp(1f); p.color = axis
+        cv.drawLine(0f, bot, width.toFloat(), bot, p)
+        p.textAlign = Paint.Align.CENTER; p.textSize = dp(10f)
+        for (i in 0 until n) {
+            val v = values[i]
+            val x0 = slot * i + slot * .15f
+            val x1 = slot * (i + 1) - slot * .15f
+            val h = if (v > 0) max(dp(2f), (v / mx).toFloat() * maxH) else 0f
+            p.style = Paint.Style.FILL
+            p.color = if (i == topIdx && v > 0) pri else withAlpha(pri, if (Look.contrast) 0xCC else if (Look.oled) 0xAA else 0x88)
+            if (h > 0) cv.drawRoundRect(x0, bot - h, x1, bot, dp(3f), dp(3f), p)
+            if (i % labelEvery == 0) {
+                p.color = if (i == topIdx && v > 0) on else sub
+                cv.drawText(labels[i], (x0 + x1) / 2f, height - dp(4f), p)
+            }
+            if (v > 0 && (showValues || i == topIdx)) {
+                p.color = if (i == topIdx) on else sub
+                cv.drawText(valueFmt(v), (x0 + x1) / 2f, bot - h - dp(3f), p)
+            }
+        }
+    }
+}
+
+/** Per tag: two thin bars, the average score of nights with the tag (top) and without it (bottom). */
+class TagCompareView(c: Context) : View(c) {
+    class Row(val label: String, val extra: String, val a: Double?, val b: Double?, val note: String)
+    var rows: List<Row> = emptyList()
+    private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val rowH get() = dp(56f)
+
+    override fun onMeasure(w: Int, h: Int) = setMeasuredDimension(MeasureSpec.getSize(w), (rows.size * rowH).toInt() + dp(2f).toInt())
+
+    override fun onDraw(cv: Canvas) {
+        val barMax = width - dp(44f)
+        var y = 0f
+        for (r in rows) {
+            p.style = Paint.Style.FILL; p.textSize = dp(13f)
+            p.textAlign = Paint.Align.LEFT; p.color = on
+            cv.drawText(r.label, 0f, y + dp(14f), p)
+            if (r.a == null || r.b == null) {
+                p.textAlign = Paint.Align.RIGHT; p.textSize = dp(11f); p.color = sub
+                cv.drawText(r.note, width.toFloat(), y + dp(14f), p)
+            } else {
+                p.textAlign = Paint.Align.RIGHT; p.textSize = dp(11f); p.color = sub
+                cv.drawText(r.extra, width.toFloat(), y + dp(14f), p)
+                p.textAlign = Paint.Align.LEFT; p.textSize = dp(11f)
+                val wa = (r.a / 100.0).coerceIn(0.0, 1.0).toFloat() * barMax
+                val wb = (r.b / 100.0).coerceIn(0.0, 1.0).toFloat() * barMax
+                p.color = pri
+                cv.drawRoundRect(0f, y + dp(22f), max(wa, dp(2f)), y + dp(32f), dp(3f), dp(3f), p)
+                p.color = on
+                cv.drawText("%.0f".format(Locale.US, r.a), max(wa, dp(2f)) + dp(6f), y + dp(31f), p)
+                p.color = withAlpha(sub, if (Look.contrast) 0xDD else 0x99)
+                cv.drawRoundRect(0f, y + dp(36f), max(wb, dp(2f)), y + dp(46f), dp(3f), dp(3f), p)
+                p.color = sub
+                cv.drawText("%.0f".format(Locale.US, r.b), max(wb, dp(2f)) + dp(6f), y + dp(45f), p)
+            }
+            y += rowH
+        }
+    }
+}

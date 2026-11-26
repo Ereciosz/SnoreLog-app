@@ -288,3 +288,47 @@ Play loudest clip	Odtwórz najgłośniejsze nagranie
 Trends can show the sleep score; tags moved under the score; optional scroll to the playing event; dates follow the app language; shorter loudest-clip button; quieter easter egg.	W Trendach można pokazać wynik snu; tagi pod wynikiem; opcjonalne przewijanie do odtwarzanego zdarzenia; daty zgodne z językiem aplikacji; krótszy przycisk najgłośniejszego nagrania; cichsza wielkanocna niespodzianka.
 Tags for this night	Tagi tej nocy
 Tags moved behind a tag icon next to the date; the playing event is highlighted in the Events list.	Tagi schowane pod ikoną obok daty; odtwarzane zdarzenie jest podświetlone na liście zdarzeń.
+Phone sounds	Dźwięki telefonu
+Silent or Do Not Disturb: good	Cisza lub Nie przeszkadzać: dobrze
+Sounds or vibration are on: they may be recorded as snoring	Dźwięki lub wibracje są włączone: mogą zostać nagrane jako chrapanie
+Notification sounds and vibration can be recorded as snoring. While monitoring, put the phone on silent or use Do Not Disturb or your phone's bedtime mode. Alarms normally still ring, but check that yours is allowed.	Dźwięki powiadomień i wibracje mogą zostać nagrane jako chrapanie. Podczas nasłuchu włącz na telefonie tryb cichy lub Nie przeszkadzać albo tryb snu. Budziki zwykle nadal dzwonią, ale sprawdź, czy Twój jest dozwolony.
+Open sound settings	Otwórz ustawienia dźwięku
+Stats	Statystyki
+Period	Okres
+7 days	7 dni
+30 days	30 dni
+90 days	90 dni
+All	Wszystko
+Overview	Przegląd
+Avg score	Śr. wynik
+Snoring min / night	Chrapanie min / noc
+Nights	Noce
+Best night	Najlepsza noc
+Worst night	Najgorsza noc
+Events	Zdarzenia
+Longest event	Najdłuższe zdarzenie
+Loudest	Najgłośniej
+Recorded	Nagrano
+Share of recorded time	Udział nagranego czasu
+Snoring	Chrapanie
+Quiet	Cisza
+snoring	chrapanie
+nights	noce
+Nights by score	Noce wg wyniku
+Good (70+)	Dobra (70+)
+Medium (40-69)	Średnia (40-69)
+Poor (<40)	Słaba (<40)
+Through the night	W ciągu nocy
+Average minutes of snoring in each hour of the night	Średnia liczba minut chrapania w każdej godzinie nocy
+By weekday	Wg dni tygodnia
+Average sleep score by the weekday the night started	Średni wynik snu wg dnia tygodnia, w którym noc się zaczęła
+Loudness	Głośność
+Number of events by peak loudness (dBFS)	Liczba zdarzeń wg głośności szczytowej (dBFS)
+Tags and sleep score	Znaczniki i wynik snu
+Average sleep score on nights with the tag (top bar) and without it (bottom bar). On the right: snoring minutes per night, with vs without.	Średni wynik snu w nocach ze znacznikiem (górny pasek) i bez niego (dolny pasek). Po prawej: minuty chrapania na noc, z vs bez.
+Suspected pauses	Podejrzane przerwy
+Experimental. Not a medical device.	Eksperymentalne. To nie jest wyrób medyczny.
+Not enough data yet. Stats appear after the first recorded night.	Za mało danych. Statystyki pojawią się po pierwszej nagranej nocy.
+~need more nights \((\d+) with / (\d+) without\)	potrzeba więcej nocy ($1 z / $2 bez)
+~([+-]\d+) vs previous period	$1 vs poprzedni okres
+New Stats tab with averages, donuts, snoring by hour and weekday, loudness and tags against the score; Settings > Detection shows whether the phone is silent; removed (latest) from the date.	Nowa karta Statystyki ze średnimi, wykresami kołowymi, chrapaniem wg godziny i dnia tygodnia, głośnością oraz znacznikami względem wyniku; Ustawienia > Wykrywanie pokazują, czy telefon jest wyciszony; usunięto (latest) z daty.
