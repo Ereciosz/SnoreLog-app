@@ -3,6 +3,7 @@ package app.snorelog
 /** Newest first. Only the last 5 are shown. */
 object Changelog {
     val items = listOf(
+        "0.54" to "Trends can show the sleep score; tags moved under the score; optional scroll to the playing event; dates follow the app language; shorter loudest-clip button; quieter easter egg.",
         "0.53" to "Play-safe cleanup: removed the overlay and battery-dialog permissions, Android cloud backup is off, a Battery Saver warning, and unused code removed.",
         "0.52.4" to "Timeline bar height now shows loudness and rescales to the visible part when you zoom; opacity shows how much of the time was snoring.",
         "0.52.3" to "Timeline bars are twice as fine and every bar can be tapped to play.",

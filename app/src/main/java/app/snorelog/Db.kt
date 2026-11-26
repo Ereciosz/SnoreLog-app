@@ -164,6 +164,14 @@ class Settings(c: Context) {
         get() = p.getBoolean("hc", false)
         set(v) { p.edit().putBoolean("hc", v).apply() }
 
+    var scrollToEvent: Boolean // when a clip starts from the timeline or "play loudest", scroll to its row in the Events list
+        get() = p.getBoolean("ste", false)
+        set(v) { p.edit().putBoolean("ste", v).apply() }
+
+    var trendScore: Boolean // Trends charts: false = minutes of snoring, true = sleep score
+        get() = p.getBoolean("trs", false)
+        set(v) { p.edit().putBoolean("trs", v).apply() }
+
     var dynamic: Boolean
         get() = p.getBoolean("dy", true)
         set(v) { p.edit().putBoolean("dy", v).apply() }

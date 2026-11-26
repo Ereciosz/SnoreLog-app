@@ -44,6 +44,7 @@ class CalendarView(c: Context) : View(c) {
     var month: Calendar = Calendar.getInstance()
     var data: Map<Int, Double> = emptyMap()
     var selected = 0
+    var fixedMax = 0.0 // > 0: colour scale 0..fixedMax (score mode), otherwise relative to the busiest night
     var onPick: (Int) -> Unit = {}
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
     private var cell = 0f
@@ -66,7 +67,7 @@ class CalendarView(c: Context) : View(c) {
         cell = width / 7f
         val off = offset()
         val days = month.getActualMaximum(Calendar.DAY_OF_MONTH)
-        val mx = max(data.values.maxOrNull() ?: 1.0, 1.0)
+        val mx = if (fixedMax > 0) fixedMax else max(data.values.maxOrNull() ?: 1.0, 1.0)
         p.textAlign = Paint.Align.CENTER; p.textSize = cell * 0.32f; p.style = Paint.Style.FILL
         p.color = sub
         L.t("MTWTFSS").forEachIndexed { i, ch -> cv.drawText(ch.toString(), cell * (i + .5f), headH * .7f, p) }
@@ -312,6 +313,7 @@ class TimelineView(c: Context) : View(c) {
 class BarChartView(c: Context) : View(c) {
     var nights: List<Pair<Int, Double>> = emptyList()
     var selected = 0
+    var fixedMax = 0.0 // > 0: fixed scale 0..fixedMax (score mode)
     var onPick: (Int) -> Unit = {}
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -320,7 +322,7 @@ class BarChartView(c: Context) : View(c) {
     override fun onDraw(cv: Canvas) {
         val n = nights.size
         if (n == 0) return
-        val mx = max(nights.maxOf { it.second }, 1.0)
+        val mx = if (fixedMax > 0) fixedMax else max(nights.maxOf { it.second }, 1.0)
         val slot = width / n.toFloat()
         val bot = height - dp(18f)
         val maxH = bot - dp(16f)

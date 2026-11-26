@@ -18,7 +18,6 @@ Trends	Trendy
 Settings	Ustawienia
 Timeline	Oś czasu
 Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.	Wysokość słupka to głośność, a krycie to udział czasu spędzonego na chrapaniu. Ściśnij palce, by przybliżyć, przeciągnij, by przesunąć, dotknij słupka, by odtworzyć, dwukrotnie dotknij, by przełączyć między zdarzeniami a całą nocą.
-Tags for this night	Znaczniki tej nocy
 Alcohol	Alkohol
 Congestion	Zatkany nos
 Late meal	Późny posiłek
@@ -217,7 +216,6 @@ Would trigger	Wyzwoliłoby
 ~([\d.,]+) min of snoring	$1 min chrapania
 ~(\d+) events, longest (\d+) s	$1 zdarzeń, najdłużej $2 s
 ~([+-][\d.,]+) min vs 7-night avg	$1 min wobec średniej z 7 nocy
-~Play loudest clip - (\d\d:\d\d), (-?\d+) dBFS	Odtwórz najgłośniejsze nagranie - $1, $2 dBFS
 Trigger +%d dB, AI score %.2f	Próg +%d dB, wynik AI %.2f
 AI classifier: not in this build	Klasyfikator AI: brak w tej wersji
 Keep monitoring alive	Utrzymaj nasłuch przy życiu
@@ -281,3 +279,12 @@ Timeline bar height now shows loudness and rescales to the visible part when you
 Battery Saver is on (it may stop monitoring)	Oszczędzanie baterii jest włączone (może zatrzymać nasłuch)
 Open settings	Otwórz ustawienia
 Play-safe cleanup: removed the overlay and battery-dialog permissions, Android cloud backup is off, a Battery Saver warning, and unused code removed.	Porządki pod Google Play: usunięto uprawnienia do wyświetlania nad innymi aplikacjami i okna baterii, wyłączono kopię w chmurze Androida, dodano ostrzeżenie o oszczędzaniu baterii i usunięto nieużywany kod.
+Snoring min	Chrapanie (min)
+Sleep score	Wynik snu
+Last 14 nights - sleep score	Ostatnie 14 nocy - wynik snu
+Scroll to the playing event	Przewijaj do odtwarzanego zdarzenia
+When a clip starts from the timeline or the loudest-clip button, the page scrolls to its row in the Events list. Tapping a row in the list never scrolls.	Gdy nagranie startuje z osi czasu lub przycisku najgłośniejszego nagrania, strona przewija się do jego wiersza na liście zdarzeń. Dotknięcie wiersza na liście nigdy nie przewija.
+Play loudest clip	Odtwórz najgłośniejsze nagranie
+Add tags	Dodaj tagi
+Tags	Tagi
+Trends can show the sleep score; tags moved under the score; optional scroll to the playing event; dates follow the app language; shorter loudest-clip button; quieter easter egg.	W Trendach można pokazać wynik snu; tagi pod wynikiem; opcjonalne przewijanie do odtwarzanego zdarzenia; daty zgodne z językiem aplikacji; krótszy przycisk najgłośniejszego nagrania; cichsza wielkanocna niespodzianka.

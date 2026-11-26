@@ -35,6 +35,9 @@ object L {
 
     @Volatile var mode = 0
 
+    /** Locale for dates and day names: follows the app language, not only the phone language. */
+    fun locale(): Locale = when (mode) { 1 -> Locale.ENGLISH; 2 -> pl; else -> Locale.getDefault() }
+
     private fun active() = mode == 2 || (mode == 0 && Locale.getDefault().language == "pl")
 
     fun t(s: String): String {

@@ -73,7 +73,7 @@ object Egg {
             val flutter = 0.6 + 0.4 * sin(2 * PI * 28 * t)
             lp += (rnd.nextGaussian() * 0.6 - lp) * 0.15
             val s = env * flutter * (0.5 * saw + 0.5 * lp.coerceIn(-1.0, 1.0))
-            d[i] = (s * 0.6 * 32767).toInt().toShort()
+            d[i] = (s * 0.15 * 32767).toInt().toShort()   // fixed, quiet level (the playback boost does not apply to this sound)
         }
         val at = AudioTrack.Builder()
             .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())

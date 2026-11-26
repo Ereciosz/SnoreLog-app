@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Rect
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
@@ -64,12 +65,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navTitle: TextView
     private lateinit var statsTv: TextView
     private lateinit var pauseBox: LinearLayout
+    private lateinit var pageScroll: ScrollView
+    private lateinit var trendTitle: TextView
     private lateinit var pauseStats: LinearLayout
     private lateinit var pauseChips: LinearLayout
     private var pauseClr = 0
     private lateinit var newTv: TextView
     private lateinit var newCard: View
     private lateinit var loudBtn: MaterialButton
+    private lateinit var tagsBtn: MaterialButton
+    private lateinit var tagsBox: LinearLayout
+    private var tagsOpen = false
+    private var tagsNow: Set<String> = emptySet()
     private var loudClip: Ev? = null
     private lateinit var monthLabel: TextView
     private lateinit var insights: TextView
@@ -95,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var evHead: TextView
     private lateinit var rejHead: TextView
     private lateinit var rejBody: LinearLayout
-    private var evOpen = true
+    private var evOpen = false // the lists open when the user taps the header or starts playback
     private var rejOpen = false
     private var evCount = 0
     private var rejCount = 0
@@ -308,8 +315,10 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) }
             addView(col(statusTitle, statusText).apply { setPadding(dp(16), dp(12), dp(16), dp(12)) })
         }
-        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
-            card(sec("Tags for this night"), chipGroup), playerCard, card(evHead, list), rejCard)
+        tagsBox = col(chipGroup).apply { visibility = View.GONE; setPadding(0, dp(4), 0, 0) }
+        tagsBtn = button("", true) { tagsOpen = !tagsOpen; updateTagsBtn() }
+        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn, tagsBtn, tagsBox), card(sec("Timeline"), tl, tv("Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
+            playerCard, card(evHead, list), rejCard)
 
         // ---- Trends page
         bars = BarChartView(this).apply { onPick = { this@MainActivity.selected = it; cal.month = Night.cal(it); refresh() } }
@@ -325,7 +334,18 @@ class MainActivity : AppCompatActivity() {
             addView(button(">", true) { cal.month.add(Calendar.MONTH, 1); refresh() })
         }
         insights = tv("", BODY).apply { setLineSpacing(0f, 1.3f) }
-        val trendsPage = col(card(sec("Last 14 nights - minutes of snoring"), bars),
+        trendTitle = sec("Last 14 nights - minutes of snoring")
+        val metricGroup = ChipGroup(this).apply { isSingleSelection = true; isSelectionRequired = true }
+        listOf("Snoring min" to false, "Sleep score" to true).forEach { (label, isScore) ->
+            metricGroup.addView(Chip(this).apply {
+                text = label; isCheckable = true; isChecked = st.trendScore == isScore
+                chipBackgroundColor = ColorStateList(
+                    arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+                    intArrayOf(selColor, Color.TRANSPARENT))
+                setOnClickListener { st.trendScore = isScore; refresh() }
+            })
+        }
+        val trendsPage = col(card(trendTitle, metricGroup, bars),
             card(sec("Calendar"), monthNav, cal), card(sec("Tag insights"), insights))
 
         // ---- Settings page
@@ -377,7 +397,9 @@ class MainActivity : AppCompatActivity() {
                 tv("Pure black or white background, bold outlines and maximum text contrast. Replaces dynamic colours.", LABEL, sub),
                 switch("Dynamic colours (Android 12+)", st.dynamic) { st.dynamic = it; recreate() }.apply { isEnabled = !st.contrast },
                 tv("Accent colour (used when dynamic colours are off)", BODY).apply { setPadding(0, dp(8), 0, dp(4)) },
-                toggleGroup(ACCENTS, st.accent) { st.accent = it; recreate() })),
+                toggleGroup(ACCENTS, st.accent) { st.accent = it; recreate() },
+                switch("Scroll to the playing event", st.scrollToEvent) { st.scrollToEvent = it }.apply { setPadding(0, dp(16), 0, dp(2)) },
+                tv("When a clip starts from the timeline or the loudest-clip button, the page scrolls to its row in the Events list. Tapping a row in the list never scrolls.", LABEL, sub))),
             page(card(
                 gated("Disarm when I get up", st.alarmOn, { st.alarmOn = it },
                     tv("Counts from your next Clock alarm (within 14 h of arming). A snooze keeps it armed. With no alarm set, it starts counting once the screen has been off for 10 min (fixed, separate from the recording delay below).", LABEL, sub),
@@ -494,7 +516,7 @@ class MainActivity : AppCompatActivity() {
 
         pages.addAll(listOf(nightPage, trendsPage, settingsPage))
         val content = col(nightPage, trendsPage, settingsPage).apply { setPadding(dp(16), dp(4), dp(16), dp(16)) }
-        val scroll = ScrollView(this).apply { addView(content); isVerticalScrollBarEnabled = false }
+        val scroll = ScrollView(this).apply { addView(content); isVerticalScrollBarEnabled = false }.also { pageScroll = it }
 
         toggleBtn = button("Arm monitoring") { onToggle() }.apply { minHeight = dp(56); cornerRadius = dp(28) }
         val actionBar = LinearLayout(this).apply {
@@ -622,6 +644,12 @@ class MainActivity : AppCompatActivity() {
         if (k <= Night.key(System.currentTimeMillis())) { selected = k; cal.month = Night.cal(k); refresh() }
     }
 
+    private fun updateTagsBtn() {
+        val names = TAGS.filter { it in tagsNow }.joinToString(" \u00b7 ") { L.t(it) }
+        tagsBtn.text = (if (names.isEmpty()) L.t("Add tags") else L.t("Tags") + ": " + names) + "   " + (if (tagsOpen) "\u25B4" else "\u25BE")
+        tagsBox.visibility = if (tagsOpen) View.VISIBLE else View.GONE
+    }
+
     private fun toggleTag(t: String) {
         val d = Db(this); val cur = d.allTags()[selected] ?: emptySet()
         d.setTags(selected, if (t in cur) cur - t else cur + t); d.close(); refresh()
@@ -640,7 +668,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---- player
-    private fun load(e: Ev, q: List<Ev> = listOf(e)) {
+    /** [follow]: scroll to the clip's row afterwards, if the user turned that on (not when the clip was tapped in the list). */
+    private fun load(e: Ev, q: List<Ev> = listOf(e), follow: Boolean = true) {
         queue = q
         if (!File(e.path).exists()) { toast("Clip file is missing"); return }
         enhancer?.release(); enhancer = null
@@ -665,6 +694,30 @@ class MainActivity : AppCompatActivity() {
         seek.valueTo = max(mp.duration, 1).toFloat()
         timeTv.text = "0:00 / ${fmtMs(mp.duration)}"
         mp.start(); playBtn.text = "Pause"
+        // Show the list the clip belongs to, so the playing clip can be found in it.
+        if (e.rej) { if (!rejOpen) { rejOpen = true; heads() } } else if (!evOpen) { evOpen = true; heads() }
+        if (follow) scrollToEvent(e)
+    }
+
+    private fun findRow(parent: ViewGroup, id: Long): View? {
+        var best: View? = null
+        for (i in 0 until parent.childCount) {
+            val c = parent.getChildAt(i)
+            val t = c.tag
+            if (t is Set<*> && t.any { it == id }) { if (t.size == 1) return c; if (best == null) best = c }
+        }
+        return best
+    }
+
+    private fun scrollToEvent(e: Ev) {
+        if (!Settings(this).scrollToEvent || tab != 0) return
+        pageScroll.postDelayed({
+            val v = findRow(if (e.rej) rejList else list, e.id) ?: return@postDelayed
+            if (v.height == 0) return@postDelayed
+            val r = Rect(0, 0, v.width, v.height)
+            pageScroll.offsetDescendantRectToMyCoords(v, r)
+            pageScroll.smoothScrollTo(0, max(0, r.top - dp(96)))
+        }, 150)
     }
 
     private fun heads() {
@@ -785,16 +838,27 @@ class MainActivity : AppCompatActivity() {
         val byNight = all.groupBy { Night.key(it.ts) }
         val mins = byNight.mapValues { en -> en.value.sumOf { it.durMs } / 60000.0 }
 
-        cal.data = mins; cal.selected = selected; cal.invalidate()
-        monthLabel.text = SimpleDateFormat("LLLL yyyy", Locale.getDefault()).format(cal.month.time)
+        // Trends: minutes of snoring, or the sleep score of each night (same formula as the Night tab).
+        val sessMin = sess.groupBy { Night.key(it.first) }.mapValues { e -> e.value.sumOf { it.second - it.first } / 60000.0 }
+        fun scoreOf(k: Int): Double? {
+            val evs = byNight[k] ?: emptyList()
+            val sm = sessMin[k] ?: 0.0
+            return if (evs.isEmpty() && sm < 30.0) null else Score.calc(evs, sm).score.toDouble()
+        }
+        val byScore = st.trendScore
+        val trend: Map<Int, Double> = if (byScore) (byNight.keys + sessMin.keys).mapNotNull { k -> scoreOf(k)?.let { k to it } }.toMap() else mins
+        trendTitle.text = L.t(if (byScore) "Last 14 nights - sleep score" else "Last 14 nights - minutes of snoring").uppercase()
+        cal.fixedMax = if (byScore) 100.0 else 0.0; bars.fixedMax = cal.fixedMax
+        cal.data = trend; cal.selected = selected; cal.invalidate()
+        monthLabel.text = SimpleDateFormat("LLLL yyyy", L.locale()).format(cal.month.time)
         val today = Night.cal(Night.key(System.currentTimeMillis()))
         bars.nights = (13 downTo 0).map { i ->
             val c = today.clone() as Calendar; c.add(Calendar.DAY_OF_MONTH, -i)
-            val k = Night.keyOf(c); k to (mins[k] ?: 0.0)
+            val k = Night.keyOf(c); k to (trend[k] ?: 0.0)
         }
         bars.selected = selected; bars.invalidate()
 
-        navTitle.text = SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Night.cal(selected).time) +
+        navTitle.text = SimpleDateFormat("EEE d MMM", L.locale()).format(Night.cal(selected).time) +
             (if (selected == Night.keyOf(today)) "  (latest)" else "")
         val ev = (byNight[selected] ?: emptyList()).sortedBy { it.ts }
         tl.events = ev; tl.key = selected
@@ -809,11 +873,11 @@ class MainActivity : AppCompatActivity() {
             val sc = Score.calc(ev, sess.filter { Night.key(it.first) == selected }.sumOf { it.second - it.first } / 60000.0)
             val score = sc.score
             lastScore = sc
-            val others = bars.nights.takeLast(7).filter { it.first != selected }.map { it.second }
+            val others = bars.nights.takeLast(7).filter { it.first != selected }.map { mins[it.first] ?: 0.0 }
             ring.score = score
             val lc = ev.maxByOrNull { it.peak }!!
             loudClip = lc; loudBtn.visibility = View.VISIBLE
-            loudBtn.text = "Play loudest clip - ${hmFmt.format(Date(lc.ts))}, ${"%.0f".format(lc.peak)} dBFS"
+            loudBtn.text = "Play loudest clip"
             statsTv.text = "${"%.1f".format(m)} min of snoring\n" +
                 "${ev.size} events, longest ${"%.0f".format(ev.maxOf { it.durMs } / 1000.0)} s\n" +
                 "Loudest ${"%.0f".format(peak)} dBFS" +
@@ -844,6 +908,7 @@ class MainActivity : AppCompatActivity() {
 
         val curTags = tagsMap[selected] ?: emptySet()
         chips.forEach { (t, c) -> c.isChecked = t in curTags }
+        tagsNow = curTags; updateTagsBtn()
         val known = byNight.keys + tagsMap.keys
         insights.text = TAGS.joinToString("\n") { t ->
             val w = known.filter { t in (tagsMap[it] ?: emptySet()) }.map { mins[it] ?: 0.0 }
@@ -864,8 +929,8 @@ class MainActivity : AppCompatActivity() {
         }
         fun clipRow(e: Ev, indent: Int) = LinearLayout(this).apply {
             gravity = Gravity.CENTER_VERTICAL; setPadding(dp(indent), dp(12), 0, dp(12))
-            setBackgroundResource(ripple.resourceId)
-            setOnClickListener { load(e) }
+            setBackgroundResource(ripple.resourceId); tag = setOf(e.id)
+            setOnClickListener { load(e, listOf(e), false) }
             addView(col(tv(timeFmt.format(Date(e.ts)), TITLE), tv(scoreText(e), LABEL, sub)), LinearLayout.LayoutParams(0, WRAP, 1f))
             addView(tv("${"%.1f".format(e.durMs / 1000.0)} s   ${"%.0f".format(e.peak)} dBFS", BODY, sub))
             addView(tv("   >", TITLE, clr(M.attr.colorPrimary)))
@@ -877,8 +942,8 @@ class MainActivity : AppCompatActivity() {
             val span = (g.last().ts + g.last().durMs - g[0].ts) / 1000
             val row = LinearLayout(this).apply {
                 gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(12), 0, dp(12))
-                setBackgroundResource(ripple.resourceId)
-                setOnClickListener { load(g[0], g) }
+                setBackgroundResource(ripple.resourceId); tag = g.map { it.id }.toSet()
+                setOnClickListener { load(g[0], g, false) }
                 setOnLongClickListener { confirmDelete(g); true }
                 addView(col(tv(timeFmt.format(Date(g[0].ts)), TITLE), tv("${g.size} clips merged, tap to play all", LABEL, sub)), LinearLayout.LayoutParams(0, WRAP, 1f))
                 addView(tv("%d:%02d   %.0f dBFS".format(span / 60, span % 60, g.maxOf { it.peak }), BODY, sub))
@@ -899,8 +964,8 @@ class MainActivity : AppCompatActivity() {
         rj.take(100).forEach { e ->
             val row = LinearLayout(this).apply {
                 gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(10), 0, dp(10))
-                setBackgroundResource(ripple.resourceId)
-                setOnClickListener { load(e) }
+                setBackgroundResource(ripple.resourceId); tag = setOf(e.id)
+                setOnClickListener { load(e, listOf(e), false) }
                 addView(col(tv(timeFmt.format(Date(e.ts)), TITLE), tv(L.t(e.reason) + scoreText(e).let { if (it.isEmpty()) "" else "  |  $it" }, LABEL, sub)), LinearLayout.LayoutParams(0, WRAP, 1f))
                 addView(tv("${"%.1f".format(e.durMs / 1000.0)} s   ${"%.0f".format(e.peak)} dBFS", BODY, sub))
                 addView(tv("   >", TITLE, clr(M.attr.colorPrimary)))
