@@ -330,5 +330,5 @@ Suspected pauses	Podejrzane przerwy
 Experimental. Not a medical device.	Eksperymentalne. To nie jest wyrób medyczny.
 Not enough data yet. Stats appear after the first recorded night.	Za mało danych. Statystyki pojawią się po pierwszej nagranej nocy.
 ~need more nights \((\d+) with / (\d+) without\)	potrzeba więcej nocy ($1 z / $2 bez)
-~([+-]\d+) vs previous period	$1 vs poprzedni okres
 New Stats tab with averages, donuts, snoring by hour and weekday, loudness and tags against the score; Settings > Detection shows whether the phone is silent; removed (latest) from the date.	Nowa karta Statystyki ze średnimi, wykresami kołowymi, chrapaniem wg godziny i dnia tygodnia, głośnością oraz znacznikami względem wyniku; Ustawienia > Wykrywanie pokazują, czy telefon jest wyciszony; usunięto (latest) z daty.
+Stats: the change vs the previous period is a small badge next to the score; the Armed/Not armed status moved next to the Arm button so it is always visible.	Statystyki: zmiana względem poprzedniego okresu to mała plakietka przy wyniku; status Uzbrojone/Nieuzbrojone przeniesiony obok przycisku uzbrajania, więc jest zawsze widoczny.

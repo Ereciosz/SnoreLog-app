@@ -85,7 +85,6 @@ class MainActivity : AppCompatActivity() {
     private var statsSig = ""
     private lateinit var batteryTv: TextView
     private lateinit var bannerCard: MaterialCardView
-    private lateinit var statusCard: MaterialCardView
     private lateinit var statusTitle: TextView
     private lateinit var statusText: TextView
     private lateinit var bannerText: TextView
@@ -308,13 +307,10 @@ class MainActivity : AppCompatActivity() {
         rejBody = col(tv("Clips the filters dropped. If real snoring is here, lower the thresholds or switch a filter off.", LABEL, sub), rejList)
         rejCard = card(rejHead, rejBody).apply { visibility = View.GONE }
         evHead = tv("", TITLE, clr(M.attr.colorPrimary)).apply { setPadding(0, dp(4), 0, dp(4)); setOnClickListener { evOpen = !evOpen; heads() } }
-        statusTitle = tv("", TITLE)
-        statusText = tv("", BODY, sub)
-        statusCard = MaterialCardView(this, null, M.attr.materialCardViewFilledStyle).apply {
-            layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = dp(8) }
-            addView(col(statusTitle, statusText).apply { setPadding(dp(16), dp(12), dp(16), dp(12)) })
-        }
-        val nightPage = col(newCard, statusCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
+        // The status now sits left of the Arm button (always visible, same row height as the button).
+        statusTitle = tv("", M.style.TextAppearance_Material3_LabelLarge).apply { maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END }
+        statusText = tv("", LABEL, sub).apply { maxLines = 2; ellipsize = android.text.TextUtils.TruncateAt.END }
+        val nightPage = col(newCard, bannerCard, nav, card(top, loudBtn), card(sec("Timeline"), tl, tv("Bar height is loudness, opacity is the share of time spent snoring. Pinch to zoom, drag to pan, tap a bar to play it, double-tap to switch between the events and the whole night.", LABEL, clr(M.attr.colorOnSurfaceVariant)), pauseBox),
             playerCard, card(evHead, list), rejCard)
 
         // ---- Trends page
@@ -535,13 +531,16 @@ class MainActivity : AppCompatActivity() {
         val scroll = ScrollView(this).apply { addView(content); isVerticalScrollBarEnabled = false }.also { pageScroll = it }
 
         toggleBtn = button("Arm monitoring") { onToggle() }.apply { minHeight = dp(56); cornerRadius = dp(28) }
+        fitText(toggleBtn)
         val actionBar = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(clr(M.attr.colorSurfaceContainer))
             addView(View(this@MainActivity).apply { setBackgroundColor(clr(M.attr.colorOutlineVariant)) }, LinearLayout.LayoutParams(MATCH, dp(1)))
             addView(LinearLayout(this@MainActivity).apply {
+                gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(16), dp(10), dp(16), dp(10))
-                addView(toggleBtn, LinearLayout.LayoutParams(MATCH, WRAP))
+                addView(col(statusTitle, statusText).apply { gravity = Gravity.CENTER_VERTICAL }, LinearLayout.LayoutParams(0, WRAP, 1f).apply { marginEnd = dp(12) })
+                addView(toggleBtn, LinearLayout.LayoutParams(0, WRAP, 1f))
             }, LinearLayout.LayoutParams(MATCH, WRAP))
         }
         toggleBtn.strokeWidth = dp(2); toggleBtn.strokeColor = ColorStateList.valueOf(clr(M.attr.colorPrimary))
@@ -860,8 +859,15 @@ class MainActivity : AppCompatActivity() {
         val ripple = TypedValue()
         theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
         fun cap(t: String) = tv(t, LABEL, sub).apply { setPadding(0, 0, 0, dp(8)) }
-        fun tile(v: String, l: String, extra: String = "", onClick: (() -> Unit)? = null): View {
-            val t = col(tv(v, M.style.TextAppearance_Material3_HeadlineSmall), tv(l, LABEL, sub))
+        fun tile(v: String, l: String, extra: String = "", badge: String = "", badgeColor: Int = 0, onClick: (() -> Unit)? = null): View {
+            val vt = tv(v, M.style.TextAppearance_Material3_HeadlineSmall)
+            if (badge.isNotEmpty()) vt.text = android.text.SpannableStringBuilder(v).apply {   // small coloured change next to the value, no extra line
+                val s = length
+                append("  ").append(badge)
+                setSpan(android.text.style.RelativeSizeSpan(0.55f), s, length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(android.text.style.ForegroundColorSpan(badgeColor), s, length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            val t = col(vt, tv(l, LABEL, sub))
             if (extra.isNotEmpty()) t.addView(tv(extra, LABEL, sub))
             if (onClick != null) { t.isClickable = true; t.setBackgroundResource(ripple.resourceId); t.setOnClickListener { onClick() } }
             return t
@@ -903,7 +909,8 @@ class MainActivity : AppCompatActivity() {
         val recH = nights.sumOf { it.r.recMin } / 60.0
 
         statsBox.addView(card(sec("Overview"),
-            tiles(tile("%.0f".format(Locale.US, avgScore), "Avg score", if (delta != null) "%+.0f vs previous period".format(Locale.US, delta) else ""),
+            tiles(tile("%.0f".format(Locale.US, avgScore), "Avg score",
+                badge = if (delta != null) "%+.0f".format(Locale.US, delta) else "", badgeColor = if ((delta ?: 0.0) >= 0) Pal.good else Pal.bad),
                 tile("%.1f".format(Locale.US, avgMin), "Snoring min / night"),
                 tile("${nights.size}", "Nights")),
             tiles(tile("${best.r.score}", "Best night", dayOf(best.k)) { goNight(best.k) },
