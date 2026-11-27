@@ -173,8 +173,8 @@ class Settings(c: Context) {
         set(v) { p.edit().putBoolean("trs", v).apply() }
 
     var statsDays: Int // Stats tab period: 7, 30, 90 days, 0 = everything that is kept
-        get() = p.getInt("sd", 30)
-        set(v) { p.edit().putInt("sd", v).apply() }
+        get() = p.getInt("std", 30)
+        set(v) { p.edit().putInt("std", v).apply() }
 
     var dynamic: Boolean
         get() = p.getBoolean("dy", true)
@@ -262,7 +262,7 @@ class Settings(c: Context) {
         set(v) { p.edit().putBoolean("so", v).apply() }
 
     var screenDelay: Int // minutes after screen off before recording starts
-        get() = p.getInt("sd", 1)
+        get() = p.getInt("sd", 1).coerceIn(0, 10)   // 0.55 wrote the Stats period (7/30/90) into this key by mistake
         set(v) { p.edit().putInt("sd", v).apply() }
 
 }

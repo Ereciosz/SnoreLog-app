@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
         return b
     }
     private fun slider(lo: Float, hi: Float, init: Int, onChange: (Int) -> Unit) = Slider(this).apply {
-        valueFrom = lo; valueTo = hi; stepSize = 1f; value = init.toFloat()
+        valueFrom = lo; valueTo = hi; stepSize = 1f; value = init.toFloat().coerceIn(lo, hi)
         addOnChangeListener { _, v, _ -> onChange(v.toInt()) }
     }
     private fun switch(t: String, on: Boolean, onChange: (Boolean) -> Unit) = MaterialSwitch(this).apply {
